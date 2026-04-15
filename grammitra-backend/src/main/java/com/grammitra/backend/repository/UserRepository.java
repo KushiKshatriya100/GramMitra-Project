@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface UserRepository extends MongoRepository<User, String> {
 
     Optional<User> findByPhone(String phone);
+
+    boolean existsByLoginId(String loginId); // 🔥 IMPORTANT
 }

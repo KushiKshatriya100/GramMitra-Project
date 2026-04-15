@@ -22,7 +22,24 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getRequestURI().startsWith("/auth");
+
+        String path = request.getRequestURI();
+
+        System.out.println("Incoming request: " + path);
+
+        // ✅ AUTH APIs always public
+        if (path.startsWith("/auth")) {
+            return true;
+        }
+
+        // ✅ PUBLIC WORKER APIs (🔥 FIXED USING contains)
+        if (path.contains("/worker/skills") ||
+                path.contains("/worker/search") ||
+                path.contains("/worker/skill-count")) {
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -33,18 +50,18 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
+        // ✅ अगर token नहीं है → allow request
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Missing or Invalid Authorization Header");
+            filterChain.doFilter(request, response);
             return;
         }
 
         String token = authHeader.substring(7);
 
         try {
-            // ✅ FIRST VALIDATE TOKEN
             if (!jwtUtil.validateToken(token)) {
-                throw new RuntimeException("Invalid Token");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
             }
 
             String phone = jwtUtil.extractPhone(token);
@@ -59,8 +76,8 @@ public class JwtFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } catch (Exception e) {
+            e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Invalid or Expired Token");
             return;
         }
 

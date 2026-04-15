@@ -1,8 +1,14 @@
 package com.grammitra.backend.controller;
 
+import com.grammitra.backend.dto.SkillCountResponse;
+import com.grammitra.backend.dto.WorkerRequest;
+import com.grammitra.backend.dto.WorkerResponse;
 import com.grammitra.backend.model.Worker;
 import com.grammitra.backend.service.WorkerService;
 
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,31 +16,47 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/worker")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "*") // 🔥 FIX ADDED
 public class WorkerController {
 
     private final WorkerService workerService;
 
-    public WorkerController(WorkerService workerService) {
-        this.workerService = workerService;
+    @PostMapping("/create-or-update")
+    public ResponseEntity<Worker> createWorker(
+            @RequestBody WorkerRequest request,
+            Authentication authentication
+    ) {
+        if (authentication == null || authentication.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        String userId = authentication.getName();
+
+        Worker worker = workerService.createOrUpdateWorker(
+                userId,
+                request.getSkills(),
+                request.getWage(),
+                request.isAvailability()
+        );
+
+        return ResponseEntity.ok(worker);
     }
 
-    // 🔥 Create/Update Worker Profile (SECURE VERSION)
-    @PostMapping("/profile")
-    public Worker createWorker(Authentication authentication,
-                               @RequestParam List<String> skills,
-                               @RequestParam double wage,
-                               @RequestParam boolean availability) {
-
-        // ✅ Get userId from JWT (NO FRONTEND INPUT)
-        String userId = (String) authentication.getPrincipal();
-
-        return workerService.createOrUpdateWorker(userId, skills, wage, availability);
-    }
-
-    // 🔥 SEARCH API
     @GetMapping("/search")
-    public List<Worker> searchWorkers(@RequestParam String skill) {
+    public ResponseEntity<List<WorkerResponse>> searchWorkers(
+            @RequestParam String skill
+    ) {
+        return ResponseEntity.ok(workerService.searchWorkers(skill));
+    }
 
-        return workerService.searchWorkers(skill);
+    @GetMapping("/skill-count")
+    public ResponseEntity<List<SkillCountResponse>> getSkillCounts() {
+        return ResponseEntity.ok(workerService.getSkillCounts());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<WorkerResponse> getWorkerById(@PathVariable String id) {
+        return ResponseEntity.ok(workerService.getWorkerById(id));
     }
 }

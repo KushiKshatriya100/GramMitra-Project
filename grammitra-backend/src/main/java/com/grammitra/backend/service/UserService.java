@@ -15,12 +15,22 @@ public class UserService {
     public User updateProfile(String phone, UserRequest request) {
 
         User existingUser = userRepository.findByPhone(phone)
-                .orElse(new User(null, "", phone, "WORKER", null));
+                .orElseGet(() -> {
+                    User newUser = new User();
+                    newUser.setPhone(phone);
+                    newUser.setProfileCompleted(false); // ✅ important
+                    return newUser;
+                });
 
         existingUser.setName(request.getName());
         existingUser.setRole(request.getRole());
         existingUser.setLocation(request.getLocation());
 
         return userRepository.save(existingUser);
+    }
+
+    public User getUserByPhone(String phone) {
+        return userRepository.findByPhone(phone)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

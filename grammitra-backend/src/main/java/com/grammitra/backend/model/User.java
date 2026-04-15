@@ -15,7 +15,11 @@ public class User {
 
     private String name;
     private String phone;
-    private String role; // WORKER / EMPLOYER
+    private String role;
 
-    private Location location;
+    private String loginId;
+
+    private Location location; // ✅ ADD BACK
+
+    private boolean profileCompleted = false;
 }

@@ -24,13 +24,10 @@ public class JobService {
     // 📩 Create Job (Employer only)
     public Job createJob(String employerId, String workerId) {
 
-        // ✅ ROLE CHECK
-        if (!"EMPLOYER".equals(getUserRole(employerId))) {
-            throw new RuntimeException("Only employer can create job");
-        }
+        validateUserRole(employerId, "EMPLOYER");
 
         if (workerId == null || workerId.isEmpty()) {
-            throw new RuntimeException("WorkerId required");
+            throw new RuntimeException("WorkerId is required");
         }
 
         Job job = new Job();
@@ -46,10 +43,7 @@ public class JobService {
     // 🔄 Update Job Status (Worker only)
     public Job updateJobStatus(String jobId, JobStatus newStatus, String workerId) {
 
-        // ✅ ROLE CHECK
-        if (!"WORKER".equals(getUserRole(workerId))) {
-            throw new RuntimeException("Only worker can update job");
-        }
+        validateUserRole(workerId, "WORKER");
 
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
@@ -62,18 +56,21 @@ public class JobService {
         JobStatus currentStatus = job.getStatus();
 
         if (!isValidTransition(currentStatus, newStatus)) {
-            throw new RuntimeException("Invalid status transition: "
-                    + currentStatus + " → " + newStatus);
+            throw new RuntimeException(
+                    "Invalid status transition: " + currentStatus + " → " + newStatus
+            );
         }
 
         job.setStatus(newStatus);
-        job.setUpdatedAt(new Date()); // ✅ IMPORTANT
+        job.setUpdatedAt(new Date());
 
         return jobRepository.save(job);
     }
 
-    // 🔥 STATE RULES
+    // 🔥 STATE TRANSITION RULES
     private boolean isValidTransition(JobStatus current, JobStatus next) {
+
+        if (current == null || next == null) return false;
 
         switch (current) {
 
@@ -94,24 +91,36 @@ public class JobService {
         }
     }
 
-    // ✅ ROLE FETCH
-    private String getUserRole(String userId) {
+    // ✅ COMMON ROLE VALIDATION (CLEANER)
+    private void validateUserRole(String userId, String expectedRole) {
 
-        return userRepository.findByPhone(userId)
+        String role = userRepository.findByPhone(userId)
                 .map(user -> {
                     if (user.getRole() == null) {
                         throw new RuntimeException("User role not set");
                     }
                     return user.getRole();
                 })
-                .orElseThrow(() -> new RuntimeException("User not found for phone: " + userId));
+                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+
+        if (!expectedRole.equals(role)) {
+            throw new RuntimeException("Access denied: Only " + expectedRole + " allowed");
+        }
     }
 
+    // 📦 GET WORKER JOBS
     public List<Job> getWorkerJobs(String workerId) {
         return jobRepository.findByWorkerId(workerId);
     }
 
+    // 📦 GET EMPLOYER JOBS
     public List<Job> getEmployerJobs(String employerId) {
         return jobRepository.findByEmployerId(employerId);
+    }
+
+    // 🔍 GET JOB BY ID
+    public Job getJobById(String jobId) {
+        return jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
     }
 }

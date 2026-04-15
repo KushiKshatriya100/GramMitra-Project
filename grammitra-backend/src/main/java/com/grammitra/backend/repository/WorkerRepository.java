@@ -10,6 +10,11 @@ public interface WorkerRepository extends MongoRepository<Worker, String> {
 
     Optional<Worker> findByUserId(String userId);
 
-    // 🔥 NEW: Search by skill + availability
+    List<Worker> findBySkillsContainingIgnoreCase(String skill);
+
     List<Worker> findBySkillsContainingAndAvailabilityTrue(String skill);
+
+    List<Worker> findBySkillsContainingAndProfileCompletedTrue(String skill);
+
+    List<Worker> findBySkillsContainingAndAvailabilityTrueAndProfileCompletedTrue(String skill);
 }

@@ -53,4 +53,11 @@ public class JobController {
 
         return jobService.getEmployerJobs(employerId);
     }
+
+    @GetMapping("/{jobId}")
+    public Job getJobById(@PathVariable String jobId) {
+        return jobService.getJobById(jobId);
+    }
+
+
 }

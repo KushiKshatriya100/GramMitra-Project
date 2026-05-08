@@ -20,6 +20,6 @@ public class Job {
 
     private JobStatus status;
 
-    private Date createdAt;
-    private Date updatedAt; // ✅ added
+    private Date createdAt = new Date();
+    private Date updatedAt = new Date();
 }

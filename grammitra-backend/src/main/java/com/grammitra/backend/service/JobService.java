@@ -91,17 +91,17 @@ public class JobService {
         }
     }
 
-    // ✅ COMMON ROLE VALIDATION (CLEANER)
+    // ✅ UPDATED ROLE VALIDATION (LOGIN ID BASED)
     private void validateUserRole(String userId, String expectedRole) {
 
-        String role = userRepository.findByPhone(userId)
+        String role = userRepository.findByLoginId(userId)
                 .map(user -> {
                     if (user.getRole() == null) {
                         throw new RuntimeException("User role not set");
                     }
                     return user.getRole();
                 })
-                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!expectedRole.equals(role)) {
             throw new RuntimeException("Access denied: Only " + expectedRole + " allowed");

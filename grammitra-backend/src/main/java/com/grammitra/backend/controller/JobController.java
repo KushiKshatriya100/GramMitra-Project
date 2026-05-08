@@ -19,45 +19,34 @@ public class JobController {
         this.jobService = jobService;
     }
 
+    private String getUser(Authentication auth) {
+        return auth.getName();
+    }
+
     @PostMapping("/create")
-    public Job createJob(@RequestParam String workerId,
-                         Authentication authentication) {
-
-        String employerId = (String) authentication.getPrincipal();
-
-        return jobService.createJob(employerId, workerId);
+    public Job createJob(@RequestParam String workerId, Authentication auth) {
+        return jobService.createJob(getUser(auth), workerId);
     }
 
     @PutMapping("/update")
     public Job updateJob(@RequestParam String jobId,
                          @RequestParam JobStatus status,
-                         Authentication authentication) {
-
-        String workerId = (String) authentication.getPrincipal();
-
-        return jobService.updateJobStatus(jobId, status, workerId);
+                         Authentication auth) {
+        return jobService.updateJobStatus(jobId, status, getUser(auth));
     }
 
     @GetMapping("/worker")
-    public List<Job> getWorkerJobs(Authentication authentication) {
-
-        String workerId = (String) authentication.getPrincipal();
-
-        return jobService.getWorkerJobs(workerId);
+    public List<Job> getWorkerJobs(Authentication auth) {
+        return jobService.getWorkerJobs(getUser(auth));
     }
 
     @GetMapping("/employer")
-    public List<Job> getEmployerJobs(Authentication authentication) {
-
-        String employerId = (String) authentication.getPrincipal();
-
-        return jobService.getEmployerJobs(employerId);
+    public List<Job> getEmployerJobs(Authentication auth) {
+        return jobService.getEmployerJobs(getUser(auth));
     }
 
     @GetMapping("/{jobId}")
     public Job getJobById(@PathVariable String jobId) {
         return jobService.getJobById(jobId);
     }
-
-
 }

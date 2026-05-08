@@ -4,50 +4,71 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import jakarta.annotation.PostConstruct;
+
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
 
-    // ✅ STRONG + FIXED SECRET (NEVER CHANGE AFTER USE)
-    private static final String SECRET =
-            "MySuperSecretKeyMySuperSecretKeyMySuperSecretKey1234567890";
+    // ✅ Default fallback (prevents crash)
+    @Value("${jwt.secret:default-secret-key-grammitra-1234567890}")
+    private String secret;
 
-    // ✅ Always use same key instance
-    private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
+    @Value("${jwt.expiration:86400000}")
+    private long expiration;
 
-    // 🔐 Generate JWT Token
-    public String generateToken(String phone) {
+    private Key key;
+
+    @PostConstruct
+    public void init() {
+
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+
+        // 🔥 Ensure minimum length
+        if (keyBytes.length < 32) {
+            String paddedSecret = String.format("%-32s", secret).replace(' ', '0');
+            keyBytes = paddedSecret.getBytes(StandardCharsets.UTF_8);
+        }
+
+        this.key = Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    // ✅ Generate token
+    public String generateToken(String loginId) {
         return Jwts.builder()
-                .setSubject(phone)
+                .setSubject(loginId)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hour
-                .signWith(key, SignatureAlgorithm.HS256) // ✅ IMPORTANT FIX
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // 🔍 Extract phone from token
-    public String extractPhone(String token) {
+    // ✅ Extract loginId
+    public String extractLoginId(String token) {
         return extractAllClaims(token).getSubject();
     }
 
-    // 🔍 Extract all claims
+    // ✅ Extract claims
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(key) // ✅ SAME KEY (VERY IMPORTANT)
+                .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 
-    // ✅ Validate Token (NEW ADD)
+    // ✅ Validate token
     public boolean validateToken(String token) {
         try {
-            extractAllClaims(token);
-            return true;
+            Claims claims = extractAllClaims(token);
+            return claims.getExpiration().after(new Date());
         } catch (Exception e) {
             return false;
         }

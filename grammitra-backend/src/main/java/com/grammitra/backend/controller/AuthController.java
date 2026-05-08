@@ -4,6 +4,7 @@ import com.grammitra.backend.model.User;
 import com.grammitra.backend.repository.UserRepository;
 import com.grammitra.backend.service.AuthService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
 
 import java.util.Map;
 
@@ -21,51 +22,59 @@ public class AuthController {
         this.userRepository = userRepository;
     }
 
-    // ✅ SEND OTP
+    // 🔥 UPDATED: Added loginId + mode
     @PostMapping("/send-otp")
-    public Map<String, Object> sendOtp(@RequestParam String phone) {
-        return authService.sendOtp(phone);
+    public ResponseEntity<?> sendOtp(
+            @RequestParam String phone,
+            @RequestParam(required = false) String loginId,
+            @RequestParam(required = false) String mode
+    ) {
+        // ✅ FIXED HERE
+        return ResponseEntity.ok(authService.sendOtp(phone, loginId, mode));
     }
 
-    // ✅ VERIFY OTP (LOGIN + REGISTER)
     @PostMapping("/verify-otp")
-    public Map<String, Object> verifyOtp(@RequestBody Map<String, String> body) {
-
-        String phone = body.get("phone");
-        String otp = body.get("otp");
-
-        String name = body.getOrDefault("name", null);
-        String role = body.getOrDefault("role", null);
-        String loginId = body.getOrDefault("loginId", null);
-
-        return authService.verifyOtp(phone, otp, name, role, loginId);
+    public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(
+                authService.verifyOtp(
+                        body.get("phone"),
+                        body.get("otp"),
+                        body.get("name"),
+                        body.get("role"),
+                        body.get("loginId")
+                )
+        );
     }
 
-    // ✅ VERIFY OTP (FORGOT FLOW)
     @PostMapping("/verify-otp-forgot")
-    public Map<String, Object> verifyOtpForgot(@RequestBody Map<String, String> body) {
-
-        String phone = body.get("phone");
-        String otp = body.get("otp");
-
-        return authService.verifyOtpForgot(phone, otp);
+    public ResponseEntity<?> verifyOtpForgot(@RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(
+                authService.verifyOtpForgot(
+                        body.get("phone"),
+                        body.get("otp")
+                )
+        );
     }
 
-    // 🔥🔥🔥 THIS WAS MISSING (MAIN FIX)
     @PostMapping("/forgot-id")
-    public Map<String, Object> forgotLoginId(@RequestParam String phone) {
-
-        return authService.forgotLoginId(phone);
+    public ResponseEntity<?> forgotLoginId(@RequestParam String phone) {
+        return ResponseEntity.ok(authService.forgotLoginId(phone));
     }
 
-    // ✅ GET CURRENT USER
     @GetMapping("/me")
-    public User getCurrentUser(@RequestHeader("Authorization") String header) {
+    public ResponseEntity<User> getCurrentUser(
+            @RequestHeader(value = "Authorization", required = false) String header) {
+
+        if (header == null || !header.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).build();
+        }
 
         String token = header.substring(7);
-        String phone = authService.getPhoneFromToken(token);
+        String loginId = authService.getLoginIdFromToken(token);
 
-        return userRepository.findByPhone(phone)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(
+                userRepository.findByLoginId(loginId)
+                        .orElseThrow(() -> new RuntimeException("User not found"))
+        );
     }
 }

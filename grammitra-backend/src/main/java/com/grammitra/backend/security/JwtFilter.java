@@ -25,21 +25,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        System.out.println("Incoming request: " + path);
-
-        // ✅ AUTH APIs always public
-        if (path.startsWith("/auth")) {
-            return true;
-        }
-
-        // ✅ PUBLIC WORKER APIs (🔥 FIXED USING contains)
-        if (path.contains("/worker/skills") ||
-                path.contains("/worker/search") ||
-                path.contains("/worker/skill-count")) {
-            return true;
-        }
-
-        return false;
+        return path.startsWith("/auth") ||
+                path.startsWith("/worker/search") ||
+                path.startsWith("/worker/skill-count") ||
+                path.startsWith("/worker/skills") ||
+                "OPTIONS".equalsIgnoreCase(request.getMethod());
     }
 
     @Override
@@ -48,37 +38,35 @@ public class JwtFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
-
-        // ✅ अगर token नहीं है → allow request
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String token = authHeader.substring(7);
-
         try {
-            if (!jwtUtil.validateToken(token)) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            String authHeader = request.getHeader("Authorization");
+
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                filterChain.doFilter(request, response);
                 return;
             }
 
-            String phone = jwtUtil.extractPhone(token);
+            String token = authHeader.substring(7).trim();
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            phone,
-                            null,
-                            Collections.emptyList()
-                    );
+            if (jwtUtil.validateToken(token)) {
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                String loginId = jwtUtil.extractLoginId(token);
+
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                loginId,
+                                null,
+                                Collections.emptyList()
+                        );
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            } else {
+                SecurityContextHolder.clearContext();
+            }
 
         } catch (Exception e) {
-            e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);

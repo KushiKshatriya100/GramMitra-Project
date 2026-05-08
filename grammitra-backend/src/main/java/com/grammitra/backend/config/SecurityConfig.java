@@ -39,10 +39,10 @@ public class SecurityConfig {
                         auth
                                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
 
-                                // ✅ AUTH ENDPOINTS
+                                // AUTH
                                 .requestMatchers("/auth/**").permitAll()
 
-                                // ✅ PUBLIC WORKER APIs
+                                // PUBLIC WORKER APIs (keep your original)
                                 .requestMatchers(
                                         "/worker/skills",
                                         "/worker/search",
@@ -57,29 +57,19 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // ✅ IMPROVED CORS CONFIG
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // ✅ IMPORTANT: use patterns instead of exact origins (better with credentials)
         configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:3000",
                 "http://127.0.0.1:3000",
-                "*" // 🔥 allows deployed frontend (you can restrict later)
+                "*"
         ));
 
-        // ✅ Explicit methods (better than "*")
-        configuration.setAllowedMethods(List.of(
-                "GET", "POST", "PUT", "DELETE", "OPTIONS"
-        ));
-
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-
-        // ✅ Required for JWT + cookies
         configuration.setAllowCredentials(true);
-
-        // ✅ Optional but recommended
         configuration.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

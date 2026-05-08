@@ -1,142 +1,73 @@
 "use client";
 
+import Navbar from "@/components/layout/Navbar";
+import { sections } from "@/features/gram-mitra/utils/categories";
+import { getCategoryIcon } from "@/features/gram-mitra/utils/categoryIcons";
+import { useTranslation } from "@/shared/i18n/useTranslation";
 import { useRouter } from "next/navigation";
+import { formatSkillName } from "@/features/gram-mitra/utils/formatText";
 
-export default function HomePage() {
+export default function ServicesPage() {
+  const { t, lang } = useTranslation();
   const router = useRouter();
 
-  const categories = [
-    { name: "Electrician", img: "/images/Electrician.jpg" },
-    { name: "Plumber", img: "/images/Plumber.jpg" },
-    { name: "Carpenter", img: "/images/carpenter.jpg" },
-    { name: "Housekeeping", img: "/images/Homekeeping.jpg" },
-  ];
+  if (!lang) return null;
 
   return (
-    <div className="relative min-h-screen">
+    <div className="min-h-screen bg-[var(--bg)]">
+      <Navbar />
 
-      {/* 🌄 Background */}
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url('/images/village.jpg')" }}
-      />
+      <div className="pt-24 max-w-6xl mx-auto px-6 pb-10">
 
-      {/* 🌑 Overlay */}
-      <div className="absolute inset-0 bg-black/60" />
+        {/* TITLE */}
+        <h1 className="text-3xl font-bold mb-10">
+          {t("services.title")}
+        </h1>
 
-      <div className="relative z-10">
+        {/* ALL SERVICES */}
+        {sections.map((section) => (
+          <div key={section.title.en} className="mb-12">
 
-        {/* 🔝 NAVBAR */}
-        <div className="flex justify-between items-center px-6 py-4 text-white">
-          <h1 className="text-3xl font-bold text-green-400">
-            GramMitra
-          </h1>
+            <h2 className="text-xl font-semibold mb-5">
+              {section.title[lang]}
+            </h2>
 
-          <div className="flex gap-3">
-            <button
-              onClick={() => router.push("/login")}
-              className="border px-4 py-1 rounded"
-            >
-              Login
-            </button>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
 
-            <button className="bg-green-500 px-4 py-1 rounded">
-              Sign Up
-            </button>
-          </div>
-        </div>
+              {section.items.map((item) => {
+                const icon = getCategoryIcon(item.en);
 
-        {/* 🔍 BIG SEARCH BAR */}
-        <div className="flex justify-center mt-10 px-4">
-          <div className="flex items-center bg-white rounded-full px-6 py-4 w-full max-w-2xl shadow-lg">
-            <span className="text-gray-500 text-xl mr-3">🔍</span>
-            <input
-              placeholder="Search services like plumber, electrician..."
-              className="w-full outline-none text-lg"
-            />
-          </div>
-        </div>
+                const title =
+                  lang === "en"
+                    ? formatSkillName(item.en)
+                    : item.hi;
 
-        {/* 🏷️ TITLE */}
-        <div className="text-center mt-10">
-          <h1 className="text-7xl font-extrabold text-green-400">
-            GramMitra
-          </h1>
-          <p className="text-gray-200 mt-2">
-            Connecting Rural Skills to Local Demand
-          </p>
-        </div>
+                return (
+                  <div
+                    key={item.en}
+                    onClick={() =>
+                      router.push(
+                        `/services/${section.title.en
+                          .toLowerCase()
+                          .replace(/\s+/g, "-")}/${item.en
+                          .toLowerCase()
+                          .replace(/\s+/g, "-")}`
+                      )
+                    }
+                    className="bg-white p-6 rounded-xl shadow hover:shadow-md hover:scale-105 transition cursor-pointer text-center"
+                  >
+                    <div className="text-3xl mb-3">{icon}</div>
 
-        {/* 📦 BIG SERVICE BOXES */}
-        <div className="flex justify-center mt-12 px-4">
-          <div className="grid grid-cols-2 gap-6 max-w-4xl">
-
-            {categories.map((cat, index) => (
-              <div
-                key={index}
-                onClick={() => router.push("/login")}
-                className="h-40 rounded-xl overflow-hidden cursor-pointer shadow-lg hover:scale-105 transition"
-              >
-                <div className="relative w-full h-full">
-
-                  <img
-                    src={cat.img}
-                    className="w-full h-full object-cover"
-                  />
-
-                  <div className="absolute bottom-0 w-full bg-black/50 text-white text-center py-2 text-lg">
-                    {cat.name}
+                    <p className="font-medium">
+                      {title}
+                    </p>
                   </div>
+                );
+              })}
 
-                </div>
-              </div>
-            ))}
-
-          </div>
-        </div>
-
-        {/* 🔽 HOME APPLIANCE SECTION */}
-        <div className="bg-white mt-20 px-8 py-10 rounded-t-3xl">
-
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-2xl font-bold">Home Appliances</h2>
-              <p className="text-gray-500 text-sm">
-                Repair & maintenance services
-              </p>
             </div>
-
-            <button className="text-blue-500 text-sm">
-              Explore More
-            </button>
           </div>
-
-          <div className="flex gap-6 overflow-x-auto">
-
-            {[
-              "AC",
-              "Fridge",
-              "Washing Machine",
-              "Microwave",
-              "Geyser",
-              "Water Purifier",
-            ].map((item, i) => (
-              <div key={i} className="min-w-[120px] text-center">
-
-                <div className="w-20 h-20 bg-gray-100 rounded-2xl mx-auto flex items-center justify-center shadow">
-                  <span className="text-2xl">🔧</span>
-                </div>
-
-                <p className="mt-2 text-sm text-gray-700">
-                  {item}
-                </p>
-
-              </div>
-            ))}
-
-          </div>
-        </div>
-
+        ))}
       </div>
     </div>
   );

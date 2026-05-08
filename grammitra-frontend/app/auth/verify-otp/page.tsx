@@ -4,148 +4,118 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { verifyOtp } from "@/features/gram-mitra/services/authService";
 import { saveToken } from "@/lib/auth";
+import { useTranslation } from "@/shared/i18n/useTranslation";
+import toast from "react-hot-toast";
 
 export default function VerifyOtpPage() {
-  const params = useSearchParams();
-  const router = useRouter();
+const { t, lang } = useTranslation();
+const params = useSearchParams();
+const router = useRouter();
 
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
-  const [loading, setLoading] = useState(false);
+const [phone, setPhone] = useState("");
+const [otp, setOtp] = useState("");
+const [loading, setLoading] = useState(false);
 
-  const mode = params.get("mode"); // register / login
-  const name = params.get("name");
-  const role = params.get("role");
+const mode = params.get("mode");
+const loginId = params.get("loginId");
 
-  // ✅ always fetch fresh loginId
-  const getLoginId = () => {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem("loginId");
-  };
+useEffect(() => {
+const p = params.get("phone");
 
-  useEffect(() => {
-    const urlPhone = params.get("phone");
 
-    if (!urlPhone) {
-      router.replace("/");
-      return;
-    }
+if (!p) {
+  router.replace("/");
+  return;
+}
 
-    setPhone(urlPhone);
-  }, [params, router]);
+setPhone(p);
 
-  const handleVerify = async () => {
-    if (!otp.trim()) {
-      alert("Enter OTP");
-      return;
-    }
+}, [params, router]);
 
-    if (!phone) {
-      alert("Phone missing. Please retry.");
-      return;
-    }
+const handleVerify = async () => {
+if (!otp.trim()) {
+toast.error(t("auth.enterOtp"));
+return;
+}
 
-    try {
-      setLoading(true);
 
-      let res: any;
+if (!phone) {
+  toast.error(t("auth.invalidSession"));
+  router.replace("/");
+  return;
+}
 
-      // 🟢 REGISTER FLOW
-      if (mode === "register") {
-        if (!name || !role) {
-          alert("Invalid registration data");
-          return;
-        }
+try {
+  setLoading(true);
 
-        res = await verifyOtp({
-          phone,
-          otp: otp.trim(),
-          name,
-          role,
-        });
+  const res: any = await verifyOtp({
+    phone,
+    otp,
+    loginId: loginId || undefined,
+    name: params.get("name") || undefined,
+    role: params.get("role") || undefined,
+  });
 
-        const loginId = res?.user?.loginId;
+  if (!res?.token || !res?.user) {
+    throw new Error("Invalid response from server");
+  }
 
-        // ✅ store user
-        localStorage.setItem("user", JSON.stringify(res.user));
+  saveToken(res.token);
+  localStorage.setItem("user", JSON.stringify(res.user));
 
-        alert(`✅ Registered Successfully!\nYour Login ID: ${loginId}`);
+  router.replace(
+    res.user.role === "WORKER"
+      ? "/dashboard/worker"
+      : "/dashboard/user"
+  );
 
-        router.replace("/auth/user/login");
-        return;
-      }
+} catch (err: any) {
+  console.error("OTP VERIFY ERROR:", err);
+  toast.error(err?.message || t("auth.failedOtp"));
+} finally {
+  setLoading(false);
+}
 
-      // 🔐 LOGIN FLOW
-      if (mode === "login") {
-        const loginId = getLoginId();
 
-        if (!loginId) {
-          alert("Login ID missing. Please login again.");
-          router.replace("/auth/user/login");
-          return;
-        }
+};
 
-        res = await verifyOtp({
-          phone,
-          otp: otp.trim(),
-          loginId: loginId.trim(), // 🔥 FIXED
-        });
+if (!lang) return null;
 
-        if (!res?.token || !res?.user) {
-          throw new Error("Invalid response from server");
-        }
+return ( <div className="min-h-screen flex items-center justify-center bg-[var(--bg)] px-4"> <div className="bg-[var(--card)] p-8 rounded-2xl shadow-lg w-full max-w-md space-y-6 border border-[var(--border)]">
 
-        // ✅ save token + user
-        saveToken(res.token);
-        localStorage.setItem("user", JSON.stringify(res.user));
 
-        // ✅ remove loginId after success
-        localStorage.removeItem("loginId");
+    <h1 className="text-2xl font-bold text-center text-[var(--text)]">
+      {t("auth.verifyOtp")}
+    </h1>
 
-        // ✅ redirect
-        if (res.user.role === "WORKER") {
-          router.replace("/dashboard/worker");
-        } else {
-          router.replace("/dashboard/user");
-        }
+    <p className="text-sm text-center text-[var(--text-soft)]">
+      {t("auth.otpSentTo")} {phone}
+    </p>
 
-        return;
-      }
-
-      alert("Invalid mode. Please retry.");
-    } catch (err: any) {
-      console.error("OTP VERIFY ERROR:", err);
-
-      const message =
-        err?.response?.data?.message ||
-        err?.response?.data ||
-        err?.message ||
-        "OTP verification failed";
-
-      alert(message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDF6EC]">
-      <h1 className="text-xl font-bold mb-4">Verify OTP</h1>
+    <div className="space-y-1">
+      <label className="text-sm text-[var(--text-soft)]">
+        {t("auth.enterOtp")}
+      </label>
 
       <input
-        placeholder="Enter OTP"
         value={otp}
         onChange={(e) => setOtp(e.target.value)}
-        className="border p-3 rounded mb-4 w-72"
+        placeholder={t("auth.enterOtpPlaceholder")}
+        className="input-primary text-center tracking-widest text-lg"
+        maxLength={6}
       />
-
-      <button
-        onClick={handleVerify}
-        disabled={loading}
-        className="bg-green-600 text-white px-6 py-2 rounded"
-      >
-        {loading ? "Verifying..." : "Verify OTP"}
-      </button>
     </div>
-  );
+
+    <button
+      onClick={handleVerify}
+      disabled={loading}
+      className="btn-primary w-full disabled:opacity-50"
+    >
+      {loading ? t("auth.verifying") : t("auth.verify")}
+    </button>
+
+  </div>
+</div>
+
+);
 }

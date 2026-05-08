@@ -1,69 +1,75 @@
 "use client";
 
-import { useRouter } from "next/navigation"; // ✅ FIXED
+import { useRouter } from "next/navigation";
 import CategoryCard from "@/features/gram-mitra/components/CategoryCard";
-
-// ✅ FIXED (named imports)
 import { sections } from "@/features/gram-mitra/utils/categories";
 import { categoryIcons } from "@/features/gram-mitra/utils/categoryIcons";
+import { useTranslation } from "@/shared/i18n/useTranslation";
+import { formatSkillName } from "@/features/gram-mitra/utils/formatText";
 
 export default function Services() {
   const router = useRouter();
+  const { t, lang } = useTranslation();
+
+  if (!lang) return null;
 
   return (
-    <section className="bg-background py-16 px-6">
-
+    <section className="bg-[var(--bg)] py-20 px-6">
       <div className="max-w-6xl mx-auto">
 
-        <h2 className="text-2xl font-semibold mb-10 text-dark">
-          Popular Services
+        <h2 className="section-title mb-12">
+          {t("services.title")}
         </h2>
 
         {sections.map((section) => (
-          <div key={section.title} className="mb-12">
+          <div key={section.title.en} className="mb-16">
 
-            {/* Section Header */}
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-dark">
-                {section.title}
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-semibold">
+                {section.title[lang]}
               </h3>
 
               <button
-                onClick={() =>
-                  router.push(
-                    `/services/${section.items[0].toLowerCase()}`
-                  )
-                }
-                className="text-sm text-blue-600 hover:underline"
+                onClick={() => router.push("/services")}
+                className="text-sm text-[var(--primary)] font-medium hover:underline"
               >
-                Explore →
+                {t("services.explore")}
               </button>
             </div>
 
-            {/* Categories */}
-            <div className="flex gap-4 overflow-x-auto pb-2">
+            <div className="flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory no-scrollbar">
+
               {section.items.map((item) => {
                 const icon =
-                  categoryIcons[item.toLowerCase()] || "🔧";
+                  categoryIcons[item.en.toLowerCase()] || "🔧";
+
+                const displayTitle =
+                  lang === "en"
+                    ? formatSkillName(item.en)
+                    : item.hi;
 
                 return (
-                  <CategoryCard
-                    key={item}
-                    icon={icon}
-                    title={item}
-                    onClick={() =>
-                      router.push(
-                        `/services/${item.toLowerCase()}`
-                      )
-                    }
-                  />
+                  <div key={item.en} className="snap-start flex-shrink-0">
+                    <CategoryCard
+                      icon={icon}
+                      title={displayTitle}
+                      onClick={() =>
+                        router.push(
+                          `/services/${section.title.en
+                            .toLowerCase()
+                            .replace(/\s+/g, "-")}/${item.en
+                            .toLowerCase()
+                            .replace(/\s+/g, "-")}`
+                        )
+                      }
+                    />
+                  </div>
                 );
               })}
-            </div>
 
+            </div>
           </div>
         ))}
-
       </div>
     </section>
   );

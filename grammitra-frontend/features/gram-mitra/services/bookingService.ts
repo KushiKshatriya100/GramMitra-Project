@@ -1,122 +1,302 @@
 import api from "@/lib/api";
-import { getToken, getUserIdFromToken } from "@/lib/auth";
-
-// ✅ Auth header
-const getAuthHeader = () => {
-  const token = getToken();
-
-  console.log("🔐 TOKEN:", token);
-
-  if (!token) {
-    console.warn("⚠️ No token found");
-    return {};
-  }
-
-  return {
-    Authorization: `Bearer ${token}`,
-  };
-};
+import { getUserIdFromToken } from "@/lib/auth";
 
 // 🔥 CREATE BOOKING
 export const createBooking = async (
   workerId: string,
   description: string
 ) => {
+
+  const userId = getUserIdFromToken();
+
+  if (!userId) {
+    throw new Error("User not authenticated");
+  }
+
   try {
-    const userId = getUserIdFromToken();
 
     const response = await api.post(
-      `/booking?userId=${userId}&workerId=${workerId}&description=${description}`,
-      {},
+      "/booking",
+      null,
       {
-        headers: getAuthHeader(),
+        params: {
+          userId,
+          workerId,
+          description,
+        },
       }
     );
 
     return response.data;
+
   } catch (error: any) {
-    console.error("❌ Booking failed:", error?.response || error);
+
+    console.error(
+      "CREATE BOOKING ERROR:",
+      error?.response?.data || error.message
+    );
+
+    // ✅ SELF BOOKING FRIENDLY ERROR
+    if (
+      error?.response?.data?.message?.includes(
+        "You cannot book yourself"
+      )
+    ) {
+      throw new Error(
+        "You cannot book yourself"
+      );
+    }
+
     throw error;
   }
 };
 
-// 🔥 GET USER BOOKINGS (🔥 FIXED HERE)
+// 🔥 GET USER BOOKINGS
 export const getUserBookings = async () => {
+
+  const userId = getUserIdFromToken();
+
+  if (!userId) return [];
+
   try {
-    const userId = getUserIdFromToken();
 
-    console.log("👤 USER ID:", userId);
+    const response = await api.get(
+      `/booking/my-bookings/${userId}`
+    );
 
-    if (!userId) {
-      console.warn("No userId found");
-      return [];
-    }
+    return Array.isArray(response.data)
+      ? response.data
+      : [];
 
-    const response = await api.get(`/booking/user/${userId}`, {
-      headers: getAuthHeader(),
-    });
-
-    return response.data;
   } catch (error: any) {
-    console.error("❌ Error fetching bookings:", error?.response || error);
 
-    // ❌ only logout on 401 (not 403)
-    if (error?.response?.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "/auth/user/login";
-    }
+    console.error(
+      "USER BOOKINGS ERROR:",
+      error?.response?.data || error.message
+    );
 
     return [];
   }
 };
 
-// 🔥 GET WORKER BOOKINGS
-export const getWorkerBookings = async (workerId: string) => {
-  try {
-    const response = await api.get(`/booking/worker/${workerId}`, {
-      headers: getAuthHeader(),
-    });
+// 🔥 GET WORKER BOOKINGS (INCOMING JOBS)
+// ✅ IMPORTANT:
+// This function MUST receive actual Worker Mongo _id
+// NOT auth userId
+export const getWorkerBookings = async (
+  workerProfileId: string
+) => {
 
-    return response.data;
+  if (!workerProfileId) return [];
+
+  try {
+
+    const response = await api.get(
+      `/booking/incoming/${workerProfileId}`
+    );
+
+    return Array.isArray(response.data)
+      ? response.data
+      : [];
+
   } catch (error: any) {
-    console.error("❌ Error fetching worker bookings:", error?.response || error);
+
+    console.error(
+      "WORKER BOOKINGS ERROR:",
+      error?.response?.data || error.message
+    );
+
+    return [];
+  }
+};
+
+// ✅ OPTIONAL CLEAN HELPERS
+
+// 📤 MY BOOKINGS
+export const getMyBookings = async () => {
+
+  const userId = getUserIdFromToken();
+
+  if (!userId) return [];
+
+  try {
+
+    const response = await api.get(
+      `/booking/my-bookings/${userId}`
+    );
+
+    return Array.isArray(response.data)
+      ? response.data
+      : [];
+
+  } catch (error: any) {
+
+    console.error(
+      "MY BOOKINGS ERROR:",
+      error?.response?.data || error.message
+    );
+
+    return [];
+  }
+};
+
+// 📥 INCOMING BOOKINGS
+// ✅ MUST RECEIVE WORKER PROFILE ID
+export const getIncomingBookings = async (
+  workerProfileId: string
+) => {
+
+  if (!workerProfileId) return [];
+
+  try {
+
+    const response = await api.get(
+      `/booking/incoming/${workerProfileId}`
+    );
+
+    return Array.isArray(response.data)
+      ? response.data
+      : [];
+
+  } catch (error: any) {
+
+    console.error(
+      "INCOMING BOOKINGS ERROR:",
+      error?.response?.data || error.message
+    );
+
     return [];
   }
 };
 
 // 🔥 ACCEPT BOOKING
-export const acceptBooking = async (bookingId: string) => {
+export const acceptBooking = async (
+  bookingId: string
+) => {
+
   try {
-    const response = await api.put(
-      `/booking/${bookingId}/accept`,
-      {},
-      {
-        headers: getAuthHeader(),
-      }
+
+    const res = await api.put(
+      `/booking/${bookingId}/accept`
     );
 
-    return response.data;
+    return res.data;
+
   } catch (error: any) {
-    console.error("❌ Accept failed:", error?.response || error);
+
+    console.error(
+      "ACCEPT BOOKING ERROR:",
+      error?.response?.data || error.message
+    );
+
     throw error;
   }
 };
 
 // 🔥 REJECT BOOKING
-export const rejectBooking = async (bookingId: string) => {
+export const rejectBooking = async (
+  bookingId: string
+) => {
+
   try {
-    const response = await api.put(
-      `/booking/${bookingId}/reject`,
-      {},
-      {
-        headers: getAuthHeader(),
-      }
+
+    const res = await api.put(
+      `/booking/${bookingId}/reject`
+    );
+
+    return res.data;
+
+  } catch (error: any) {
+
+    console.error(
+      "REJECT BOOKING ERROR:",
+      error?.response?.data || error.message
+    );
+
+    throw error;
+  }
+};
+
+// 💰 CREATE RAZORPAY ORDER
+export const createOrder = async (
+  bookingId: string
+) => {
+
+  try {
+
+    const response = await api.post(
+      `/booking/create-order/${bookingId}`
     );
 
     return response.data;
+
   } catch (error: any) {
-    console.error("❌ Reject failed:", error?.response || error);
+
+    console.error(
+      "CREATE ORDER ERROR:",
+      error?.response?.data || error.message
+    );
+
+    throw error;
+  }
+};
+
+// 💰 VERIFY PAYMENT
+export const verifyPayment = async (
+  data: {
+    orderId: string;
+    paymentId: string;
+    signature: string;
+  }
+) => {
+
+  try {
+
+    const response = await api.post(
+      `/booking/verify-payment`,
+      data
+    );
+
+    return response.data;
+
+  } catch (error: any) {
+
+    console.error(
+      "VERIFY PAYMENT ERROR:",
+      error?.response?.data || error.message
+    );
+
+    throw error;
+  }
+};
+
+// ✅ MARK BOOKING COMPLETED
+export const completeBooking = async (
+  bookingId: string
+) => {
+
+  if (!bookingId) {
+    throw new Error(
+      "Invalid booking"
+    );
+  }
+
+  try {
+
+    const response = await api.put(
+      `/booking/${bookingId}/complete`
+    );
+
+    return response.data;
+
+  } catch (error: any) {
+
+    console.error(
+      "COMPLETE BOOKING ERROR:",
+      error?.response?.data ||
+      error.message
+    );
+
     throw error;
   }
 };

@@ -1,22 +1,61 @@
+"use client";
+
+import Navbar from "@/components/layout/Navbar";
+import { useTranslation } from "@/shared/i18n/useTranslation";
+
 export default function AboutPage() {
+  const { t, lang } = useTranslation();
+
+  if (!lang) return null;
+
   return (
-    <div className="min-h-screen p-10 bg-gray-100">
+    <div className="min-h-screen bg-[var(--bg)]">
+      <Navbar />
 
-      <h1 className="text-3xl font-bold mb-4">
-        About GramMitra
-      </h1>
+      <div className="pt-24 max-w-4xl mx-auto px-6 pb-12">
 
-      <p className="text-gray-700 text-lg">
-        GramMitra is a platform that connects rural skilled workers
-        like plumbers, electricians, and carpenters with people
-        who need their services.
-      </p>
+        {/* TITLE */}
+        <h1 className="text-3xl font-bold mb-6">
+          {t("about.title")}
+        </h1>
 
-      <p className="mt-4 text-gray-700">
-        Our mission is to empower rural employment and make
-        services easily accessible.
-      </p>
+        {/* DESCRIPTION */}
+        <p className="text-gray-600 mb-6 leading-relaxed">
+          {t("about.description")}
+        </p>
 
+        {/* SECTIONS */}
+        <div className="space-y-6">
+
+          <div>
+            <h2 className="text-xl font-semibold mb-2">
+              {t("about.missionTitle")}
+            </h2>
+            <p className="text-gray-600">
+              {t("about.mission")}
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold mb-2">
+              {t("about.howItWorksTitle")}
+            </h2>
+            <p className="text-gray-600">
+              {t("about.howItWorks")}
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold mb-2">
+              {t("about.visionTitle")}
+            </h2>
+            <p className="text-gray-600">
+              {t("about.vision")}
+            </p>
+          </div>
+
+        </div>
+      </div>
     </div>
   );
 }

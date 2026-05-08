@@ -1,123 +1,99 @@
 "use client";
 
 import { useState } from "react";
-import api from "@/lib/api"; // ✅ ADD THIS
-import {
-  forgotLoginId,
-  sendOtp,
-  verifyOtp,
-} from "@/features/gram-mitra/services/authService";
+import api from "@/lib/api";
+import { forgotLoginId, sendOtp } from "@/features/gram-mitra/services/authService";
+import { useTranslation } from "@/shared/i18n/useTranslation";
+import toast from "react-hot-toast";
 
 export default function ForgotLoginIdPage() {
-  const [step, setStep] = useState(1);
+  const { t, lang } = useTranslation();
 
+  const [step, setStep] = useState(1);
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [loginId, setLoginId] = useState("");
-
   const [loading, setLoading] = useState(false);
 
-  // 📩 STEP 1: SEND OTP
+  if (!lang) return null;
+
   const handleSendOtp = async () => {
-    if (!phone.trim()) {
-      alert("Enter phone number");
-      return;
-    }
+    if (!phone) return toast.error(t("auth.phoneRequired"));
 
     try {
       setLoading(true);
-
-      await sendOtp(phone.trim());
-
+      await sendOtp(phone);
       setStep(2);
     } catch (err: any) {
-      console.error(err);
-      alert(err?.response?.data || "Failed to send OTP");
+      toast.error(err?.message || t("auth.failedOtp"));
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔐 STEP 2: VERIFY OTP + GET LOGIN ID
   const handleVerifyOtp = async () => {
-    if (!otp.trim()) {
-      alert("Enter OTP");
-      return;
-    }
-
     try {
       setLoading(true);
 
-      // ✅ NEW API
-      await api.post("/auth/verify-otp-forgot", {
-        phone: phone.trim(),
-        otp: otp.trim(),
-      });
+      await api.post("/auth/verify-otp-forgot", { phone, otp });
 
-      // ✅ THEN GET LOGIN ID
-      const res: any = await forgotLoginId(phone.trim());
-
+      const res: any = await forgotLoginId(phone);
       setLoginId(res.loginId);
       setStep(3);
-
     } catch (err: any) {
-      alert(err?.response?.data || err?.message);
+      toast.error(err?.message || t("auth.failedOtp"));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDF6EC]">
-      <h1 className="text-xl font-bold mb-4">Forgot Login ID</h1>
+    <div className="min-h-screen flex items-center justify-center bg-[var(--bg)]">
+      <div className="bg-[var(--card)] p-8 rounded-2xl shadow-lg w-full max-w-md space-y-6 border border-[var(--border)]">
 
-      {/* STEP 1 */}
-      {step === 1 && (
-        <>
-          <input
-            placeholder="Enter Phone"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="border p-3 rounded mb-4 w-72"
-          />
+        <h1 className="text-xl font-bold text-center">
+          {t("auth.forgotId")}
+        </h1>
 
-          <button
-            onClick={handleSendOtp}
-            className="bg-blue-600 text-white px-6 py-2 rounded"
-          >
-            {loading ? "Sending..." : "Send OTP"}
-          </button>
-        </>
-      )}
+        {step === 1 && (
+          <>
+            <input
+              placeholder={t("auth.phonePlaceholder")}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="input-primary"
+            />
 
-      {/* STEP 2 */}
-      {step === 2 && (
-        <>
-          <input
-            placeholder="Enter OTP"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            className="border p-3 rounded mb-4 w-72"
-          />
+            <button onClick={handleSendOtp} className="btn-primary w-full">
+              {loading ? t("auth.sending") : t("auth.sendOtp")}
+            </button>
+          </>
+        )}
 
-          <button
-            onClick={handleVerifyOtp}
-            className="bg-green-600 text-white px-6 py-2 rounded"
-          >
-            {loading ? "Verifying..." : "Verify OTP"}
-          </button>
-        </>
-      )}
+        {step === 2 && (
+          <>
+            <input
+              placeholder={t("auth.enterOtp")}
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              className="input-primary"
+            />
 
-      {/* STEP 3 */}
-      {step === 3 && (
-        <div className="text-center bg-white p-6 rounded shadow">
-          <p className="mb-2 text-gray-600">Your Login ID is:</p>
-          <h2 className="text-xl font-bold text-green-600">
-            {loginId}
-          </h2>
-        </div>
-      )}
+            <button onClick={handleVerifyOtp} className="btn-primary w-full">
+              {loading ? t("auth.verifying") : t("auth.verify")}
+            </button>
+          </>
+        )}
+
+        {step === 3 && (
+          <div className="text-center">
+            <p>{t("auth.yourId")}</p>
+            <h2 className="text-[var(--primary)] font-bold text-lg">
+              {loginId}
+            </h2>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

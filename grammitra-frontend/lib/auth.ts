@@ -1,16 +1,16 @@
 // lib/auth.ts
 
+// 🔥 Safe check
+const isBrowser = typeof window !== "undefined";
+
 // ✅ Save token
 export const saveToken = (token: string) => {
   try {
-    if (typeof window !== "undefined") {
-      console.log("💾 Saving token:", token);
+    if (!isBrowser) return;
 
-      // ❗ Ensure clean token (no quotes/spaces)
-      const cleanToken = token.replace(/^"|"$/g, "").trim();
+    const cleanToken = token.replace(/^"|"$/g, "").trim();
 
-      localStorage.setItem("token", cleanToken);
-    }
+    localStorage.setItem("token", cleanToken);
   } catch (error) {
     console.error("❌ Error saving token:", error);
   }
@@ -19,67 +19,50 @@ export const saveToken = (token: string) => {
 // ✅ Get token
 export const getToken = () => {
   try {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
-
-      console.log("🔐 Retrieved token:", token);
-
-      return token;
-    }
-    return null;
+    if (!isBrowser) return null;
+    return localStorage.getItem("token");
   } catch (error) {
     console.error("❌ Error getting token:", error);
     return null;
   }
 };
 
-// ✅ Remove token (logout)
+// ✅ Remove token
 export const removeToken = () => {
   try {
-    if (typeof window !== "undefined") {
-      console.log("🧹 Removing token");
-      localStorage.removeItem("token");
-    }
+    if (!isBrowser) return;
+    localStorage.removeItem("token");
   } catch (error) {
     console.error("❌ Error removing token:", error);
   }
 };
 
-// ✅ Decode full JWT payload (🔥 IMPORTANT for debugging)
+// ✅ Decode JWT payload safely
 export const getTokenPayload = () => {
   try {
-    if (typeof window === "undefined") return null;
+    if (!isBrowser) return null;
 
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) return null;
 
-    const payload = JSON.parse(atob(token.split(".")[1]));
+    const payloadBase64 = token.split(".")[1];
+    if (!payloadBase64) return null;
 
-    console.log("📦 Token payload:", payload);
-
-    return payload;
+    return JSON.parse(atob(payloadBase64));
   } catch (error) {
     console.error("❌ Error decoding token:", error);
     return null;
   }
 };
 
-// ✅ Get userId from token
+// ✅ Extract loginId (IMPORTANT)
 export const getUserIdFromToken = () => {
-  try {
-    const payload = getTokenPayload();
-    return payload?.sub || payload?.userId || null;
-  } catch (error) {
-    return null;
-  }
+  const payload = getTokenPayload();
+  return payload?.sub || payload?.loginId || payload?.userId || null;
 };
 
-// ✅ Get role from token (🔥 VERY IMPORTANT for your 403 issue)
+// ✅ Extract role
 export const getUserRoleFromToken = () => {
-  try {
-    const payload = getTokenPayload();
-    return payload?.role || payload?.authorities || null;
-  } catch (error) {
-    return null;
-  }
+  const payload = getTokenPayload();
+  return payload?.role || payload?.authorities || null;
 };

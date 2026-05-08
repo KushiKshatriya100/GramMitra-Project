@@ -3,178 +3,171 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Button from "@/components/ui/Button";
+import { useTranslation } from "@/shared/i18n/useTranslation";
+import { setLanguage } from "@/shared/i18n/languageStore";
 
 export default function Navbar() {
   const router = useRouter();
+  const { t, lang } = useTranslation();
 
   const [user, setUser] = useState<any>(null);
   const [open, setOpen] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [theme, setTheme] = useState("light");
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
+
+    const savedTheme = localStorage.getItem("theme") || "light";
+    setTheme(savedTheme);
+
+    document.documentElement.classList.remove("theme-light", "theme-dark");
+    document.documentElement.classList.add(`theme-${savedTheme}`);
   }, []);
+
+  if (!lang) return null;
 
   const handleNavigate = (path: string) => {
     setOpen(false);
-    setMobileOpen(false);
     router.push(path);
   };
 
   const handleLogout = () => {
-    try {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    setOpen(false);
+    router.replace("/");
+    router.refresh();
+  };
 
-      setUser(null);
-      setOpen(false);
-      setMobileOpen(false);
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
 
-      router.replace("/");
-      setTimeout(() => window.location.reload(), 100);
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
+    document.documentElement.classList.remove("theme-light", "theme-dark");
+    document.documentElement.classList.add(`theme-${newTheme}`);
+  };
+
+  const toggleLang = () => {
+    const newLang = lang === "en" ? "hi" : "en";
+    localStorage.setItem("lang", newLang);
+    setLanguage(newLang);
+    window.location.reload();
   };
 
   const role = user?.role?.toLowerCase();
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 backdrop-blur-xl bg-black/30 border-b border-white/10 px-6 py-4 flex justify-between items-center">
+    <nav className="fixed top-0 left-0 w-full z-50
+      bg-gradient-to-r from-[#3B2F2F]/90 to-[#4E3B31]/90
+      backdrop-blur-xl border-b border-white/10
+      px-6 py-4 flex justify-between items-center
+      shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
 
       {/* LOGO */}
       <h1
         onClick={() => handleNavigate("/")}
-        className="text-white font-bold text-xl cursor-pointer"
+        className="text-white font-bold text-xl cursor-pointer tracking-wide"
       >
         GramMitra 🌾
       </h1>
 
-      {/* DESKTOP LINKS */}
-      <div className="hidden md:flex gap-8 text-white text-sm">
-        <button onClick={() => handleNavigate("/")}>Home</button>
+      {/* NAV LINKS */}
+      <div className="hidden md:flex gap-8 text-white text-sm font-medium">
+        <button onClick={() => handleNavigate("/")}>
+          {t("navbar.home")}
+        </button>
+
         <button onClick={() => handleNavigate("/services")}>
-          Find Workers
+          {t("navbar.services")}
+        </button>
+
+        <button onClick={() => handleNavigate("/about")}>
+          {t("navbar.about")}
         </button>
       </div>
 
-      {/* RIGHT SIDE */}
-      <div className="flex items-center gap-4 relative">
+      {/* RIGHT */}
+      <div className="flex items-center gap-3 relative">
+
+        {/* LANG */}
+        <button
+          onClick={toggleLang}
+          className="text-white text-xs border border-white/20 px-3 py-1 rounded-full hover:bg-white/10 transition"
+        >
+          {lang === "en" ? "हिंदी" : "EN"}
+        </button>
+
+        {/* THEME */}
+        <button onClick={toggleTheme} className="text-lg">
+          {theme === "light" ? "🌙" : "☀️"}
+        </button>
 
         {!user ? (
-          <>
+          <div className="flex items-center gap-3">
             <button
               onClick={() => handleNavigate("/auth/user/login")}
-              className="text-white"
+              className="text-white text-sm hover:underline"
             >
-              Login
+              {t("navbar.login")}
             </button>
 
             <Button onClick={() => handleNavigate("/auth/user/register")}>
-              Sign Up
+              {t("navbar.signup")}
             </Button>
-          </>
+          </div>
         ) : (
           <>
             {/* AVATAR */}
             <div
               onClick={() => setOpen(!open)}
-              className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center font-bold cursor-pointer shadow-md"
+              className="w-10 h-10 rounded-full bg-orange-500 text-white
+              flex items-center justify-center font-bold cursor-pointer shadow-md"
             >
               {user.name?.charAt(0)}
             </div>
 
-            {/* 🔥 UPDATED DROPDOWN */}
+            {/* DROPDOWN */}
             {open && (
-              <div className="absolute right-0 top-14 w-64 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+              <div className="absolute right-0 top-14 w-64
+                bg-[var(--card)] border border-[var(--border)]
+                rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.2)]
+                overflow-hidden z-50 backdrop-blur-md">
 
-                {/* HEADER */}
-                <div className="flex items-center gap-3 p-4 border-b">
-                  <div className="w-10 h-10 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold">
-                    {user.name?.charAt(0)}
-                  </div>
-
-                  <div>
-                    <p className="font-semibold text-gray-800">
-                      {user.name}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {user.phone || "Welcome back"}
-                    </p>
-                  </div>
+                <div className="p-4 border-b">
+                  <p className="font-semibold">{user.name}</p>
+                  <p className="text-xs text-[var(--text-soft)]">
+                    {user.phone || t("navbar.welcome")}
+                  </p>
                 </div>
 
-                {/* MENU */}
-                <div className="flex flex-col">
+                <button
+                  onClick={() => handleNavigate(`/dashboard/${role}`)}
+                  className="w-full text-left px-4 py-3 hover:bg-[var(--bg)] text-sm"
+                >
+                  {t("navbar.dashboard")}
+                </button>
 
-                  <button
-                    onClick={() => handleNavigate(`/dashboard/${role}`)}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 text-gray-700"
-                  >
-                    📊 Dashboard
-                  </button>
+                <button
+                  onClick={() => handleNavigate(`/dashboard/${role}/profile`)}
+                  className="w-full text-left px-4 py-3 hover:bg-[var(--bg)] text-sm"
+                >
+                  {t("navbar.profile")}
+                </button>
 
-                  <button
-                    onClick={() =>
-                      handleNavigate(`/dashboard/${role}/profile`)
-                    }
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 text-gray-700"
-                  >
-                    👤 Profile
-                  </button>
-
-                  <div className="border-t my-1"></div>
-
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-red-500"
-                  >
-                    🚪 Logout
-                  </button>
-
-                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-3 hover:bg-red-50 text-sm text-red-500"
+                >
+                  {t("navbar.logout")}
+                </button>
               </div>
             )}
           </>
         )}
       </div>
-
-      {/* MOBILE MENU */}
-      {mobileOpen && (
-        <div className="absolute top-full left-0 w-full bg-black/90 text-white flex flex-col items-center py-6 gap-4 md:hidden">
-
-          <button onClick={() => handleNavigate("/")}>Home</button>
-          <button onClick={() => handleNavigate("/services")}>
-            Find Workers
-          </button>
-
-          {!user ? (
-            <>
-              <button onClick={() => handleNavigate("/auth/user/login")}>
-                Login
-              </button>
-              <button onClick={() => handleNavigate("/auth/user/register")}>
-                Sign Up
-              </button>
-            </>
-          ) : (
-            <>
-              <button onClick={() => handleNavigate(`/dashboard/${role}`)}>
-                Dashboard
-              </button>
-              <button
-                onClick={() =>
-                  handleNavigate(`/dashboard/${role}/profile`)
-                }
-              >
-                Profile
-              </button>
-              <button onClick={handleLogout}>Logout</button>
-            </>
-          )}
-        </div>
-      )}
     </nav>
   );
 }

@@ -16,11 +16,16 @@ export default function CategoryCard({
   return (
     <Card
       onClick={onClick}
-      className="min-w-[130px] text-center"
+      className="w-[150px] h-[150px] flex flex-col items-center justify-center
+      text-center gap-3 rounded-2xl border border-[var(--border)] bg-white/90
+      hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
     >
-      <div className="text-3xl mb-2">{icon}</div>
+      <div className="w-14 h-14 flex items-center justify-center rounded-full
+      bg-[var(--border)] text-2xl shadow-sm group-hover:scale-110 transition">
+        {icon}
+      </div>
 
-      <p className="capitalize text-sm font-medium">
+      <p className="text-sm font-semibold text-[var(--text)] leading-snug">
         {title}
       </p>
     </Card>

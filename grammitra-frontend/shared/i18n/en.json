@@ -1,0 +1,446 @@
+{
+  "navbar": {
+    "home": "Home",
+    "findWorkers": "Find Workers",
+    "login": "Login",
+    "signup": "Sign Up",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "logout": "Logout",
+    "welcome": "Welcome back",
+    "services": "Services",
+    "about": "About"
+  },
+
+  "home": {
+    "title": "Connecting Villages to Opportunities",
+    "subtitle": "Find trusted workers near you — simple, fast, reliable",
+    "search": "Search",
+    "placeholder": "Search electricians, plumbers...",
+    "trust": "Reliable local workers • Verified services"
+  },
+
+  "services": {
+    "title": "Popular Services",
+    "explore": "Explore →",
+    "noWorkers": "No workers found"
+  },
+
+  "worker": {
+    "wage": "Wage",
+    "availability": "Availability",
+    "available": "Available",
+    "busy": "Busy",
+    "experience": "Experience",
+    "location": "Location",
+
+    "hire": "Hire Worker",
+    "booking": "Booking...",
+    "success": "Worker booked successfully!",
+    "failed": "Booking failed. Try again.",
+
+    "notFound": "Worker not found",
+    "loadError": "Failed to load worker",
+
+    "reviews": "reviews",
+    "rating": "Rating",
+
+    "customerReviews": "Customer Reviews",
+    "verifiedCustomers": "Verified customers",
+
+    "noReviews": "No Reviews Yet",
+    "noReviewsSubtitle": "This worker has not received reviews yet.",
+
+    "writeReview": "Write Review",
+
+    "nearby": "Nearby",
+    "service": "service",
+
+    "bookingRequest": "Booking request for",
+
+    "view": "View",
+
+    "verified": "Verified",
+
+    "noSkills": "No skills",
+
+    "perDay": "/day",
+
+    "localWorker": "Local Worker"
+  },
+
+  "common": {
+    "back": "Back",
+    "na": "N/A",
+    "loading": "Loading...",
+    "explore": "Explore"
+  },
+
+  "auth": {
+    "loginRequired": "Please login first",
+    "login": "Login",
+    "register": "Create Account",
+    "phone": "Phone Number",
+    "loginId": "Login ID",
+    "name": "Full Name",
+    "user": "User",
+    "worker": "Worker",
+
+    "sendOtp": "Send OTP",
+    "sending": "Sending...",
+
+    "verifyOtp": "Verify OTP",
+    "verify": "Verify",
+    "verifying": "Verifying...",
+
+    "enterOtp": "Enter OTP",
+
+    "forgotId": "Forgot Login ID?",
+    "yourId": "Your Login ID",
+
+    "phonePlaceholder": "Enter your phone number",
+    "loginIdPlaceholder": "Enter your login ID",
+    "namePlaceholder": "Enter your full name",
+
+    "fillAll": "Please fill all fields",
+
+    "userNotFound": "User not found",
+    "alreadyRegistered": "User already registered",
+
+    "loginFailed": "Login failed",
+    "registerFailed": "Registration failed",
+
+    "failedOtp": "OTP verification failed",
+
+    "enterOtpPlaceholder": "Enter OTP",
+
+    "invalidSession": "Invalid session. Please try again.",
+
+    "phoneRequired": "Phone number is required"
+  },
+
+  "profile": {
+    "basicInfo": "Basic Information",
+    "name": "Name",
+    "phone": "Phone",
+    "loginId": "Login ID",
+    "role": "Role",
+
+    "workerProfile": "Worker Profile",
+
+    "completed": "Profile Completed ✅",
+    "incomplete": "Profile Incomplete ⚠️",
+
+    "edit": "Edit Profile",
+    "view": "View Profile",
+
+    "notAdded": "Not added",
+
+    "yearsExperience": "years experience",
+
+    "editTitle": "Edit Profile",
+
+    "location": "Location",
+
+    "gender": "Gender",
+    "select": "Select",
+    "male": "Male",
+    "female": "Female",
+
+    "age": "Age",
+
+    "experience": "Experience (years)",
+
+    "wage": "Daily Wage",
+
+    "available": "Available for work",
+
+    "skills": "Skills",
+    "selectSkill": "Select a skill",
+
+    "bio": "About You",
+
+    "save": "Save Profile",
+
+    "noImage": "No Image",
+
+    "updated": "Profile updated successfully",
+    "updateFailed": "Failed to update profile",
+    "loadFailed": "Failed to load profile",
+
+    "fillRequired": "Please fill required fields",
+
+    "editSubtitle": "Keep your profile updated to get better work opportunities",
+
+    "enterAge": "Enter age",
+    "enterExperience": "Years of experience",
+    "enterWage": "Enter daily wage",
+    "enterLocation": "Enter your location",
+
+    "bioPlaceholder": "Tell people about your experience and skills",
+
+    "noSkillsSelected": "No skills selected yet",
+
+    "locationCaptured": "Location captured",
+    "locationFailed": "Failed to get location",
+    "locationUnsupported": "Location not supported"
+  },
+
+  "dashboard": {
+    "title": "Your Dashboard",
+
+    "subtitle": "Manage your bookings and track your activity",
+
+    "noBookings": "No bookings yet",
+
+    "loadFailed": "Failed to load dashboard",
+
+    "totalBookings": "Total Bookings",
+
+    "completedServices": "Completed Services",
+
+    "pendingReviews": "Pending Reviews",
+
+    "reviewPending": "Review Pending",
+
+    "reviewPendingMessage": "You have completed bookings waiting for reviews",
+
+    "myBookings": "My Bookings",
+
+    "incomingJobs": "Incoming Jobs"
+  },
+
+  "booking": {
+    "status": {
+      "label": "Status",
+
+      "pending": "Pending",
+
+      "paid": "Paid",
+
+      "accepted": "Accepted",
+
+      "completed": "Completed",
+
+      "rejected": "Rejected"
+    },
+
+    "serviceEnquiry": "Service enquiry",
+
+    "accept": "Accept",
+    "reject": "Reject",
+
+    "acceptFailed": "Failed to accept booking",
+    "rejectFailed": "Failed to reject booking",
+
+    "acceptSuccess": "Booking accepted successfully",
+    "rejectSuccess": "Booking rejected successfully",
+
+    "complete": "Mark Completed",
+
+    "completed": "Service completed successfully",
+
+    "active": "Booking is active",
+
+    "reviewNow": "Give Review",
+
+    "reviewSubmitted": "Review already submitted",
+
+    "submitReview": "Submit Review",
+
+    "reviewPlaceholder": "Write your experience...",
+
+    "reviewSuccess": "Review submitted successfully",
+
+    "reviewFailed": "Failed to submit review",
+
+    "smsNotice": "Worker will be notified via SMS",
+
+    "paymentSuccess": "Payment successful",
+
+    "paymentFailed": "Payment failed"
+  },
+
+  "footer": {
+    "tagline": "Connecting villages with opportunities",
+
+    "links": "Quick Links",
+
+    "contact": "Contact"
+  },
+
+  "about": {
+    "title": "About GramMitra",
+
+    "description": "GramMitra is a platform designed to connect people in villages and small towns with trusted local workers. Our goal is to make it simple for users to find skilled services nearby without confusion or delay.",
+
+    "missionTitle": "Our Mission",
+
+    "mission": "We aim to empower local workers by giving them visibility and opportunities, while helping users easily access reliable services like repair, cleaning, and personal assistance.",
+
+    "howItWorksTitle": "How It Works",
+
+    "howItWorks": "Users can browse services, find workers based on their needs, and book them in just a few clicks. Workers can showcase their skills and get more job opportunities through the platform.",
+
+    "visionTitle": "Our Vision",
+
+    "vision": "Our vision is to build a strong digital bridge between rural talent and everyday needs, creating a trusted ecosystem where both users and workers grow together."
+  },
+
+  "skills": {
+    "acrepair": "AC Repair",
+    "refrigeratorrepair": "Refrigerator Repair",
+    "washingmachinerepair": "Washing Machine Repair",
+    "microwaverepair": "Microwave Repair",
+    "geyserrepair": "Geyser Repair",
+    "waterpurifierrepair": "Water Purifier Repair",
+    "chimneyrepair": "Chimney Repair",
+
+    "tvrepair": "TV Repair",
+    "mobilerepair": "Mobile Repair",
+    "laptoprepair": "Laptop Repair",
+    "electricalwiring": "Electrical Wiring",
+    "inverterrepair": "Inverter Repair",
+
+    "plumbing": "Plumbing",
+    "watertankcleaning": "Water Tank Cleaning",
+    "leakagefixing": "Leakage Fixing",
+    "motorpumprepair": "Motor Pump Repair",
+
+    "housecleaning": "House Cleaning",
+    "deepcleaning": "Deep Cleaning",
+    "kitchencleaning": "Kitchen Cleaning",
+    "bathroomcleaning": "Bathroom Cleaning",
+    "sofacleaning": "Sofa Cleaning",
+
+    "maid": "Maid",
+    "cook": "Cook",
+    "babysitter": "Babysitter",
+    "eldercare": "Elder Care",
+    "beautician": "Beautician",
+    "haircut": "Haircut",
+
+    "tuition": "Tuition",
+    "mathtutor": "Math Tutor",
+    "englishtutor": "English Tutor",
+    "computertraining": "Computer Training",
+
+    "carpenter": "Carpenter",
+    "painter": "Painter",
+    "mason": "Mason",
+    "interiorrepair": "Interior Repair",
+
+    "tractorrepair": "Tractor Repair",
+    "solarpanel": "Solar Panel",
+    "agriculturepump": "Agriculture Pump",
+    "fencing": "Fencing"
+  },
+
+  "payment": {
+    "payNow": "Pay Now",
+
+    "success": "Payment successful",
+
+    "failed": "Payment failed",
+
+    "verifyFailed": "Payment verification failed",
+
+    "sdkFailed": "Payment system failed to load",
+
+    "cancelled": "Payment cancelled",
+
+    "description": "Service Booking Payment"
+  },
+
+  "chat": {
+    "title": "GramMitra Assistant",
+
+    "placeholder": "Type your message...",
+
+    "send": "Send",
+
+    "error": "Something went wrong",
+
+    "noResponse": "No response"
+  },
+
+  "serviceSubtitles": {
+    "acrepair": "Fast and reliable AC repair services at your doorstep",
+
+    "refrigeratorrepair": "Expert refrigerator repair for cooling problems",
+
+    "washingmachinerepair": "Professional washing machine repair services",
+
+    "microwaverepair": "Quick microwave oven repair by trained technicians",
+
+    "geyserrepair": "Safe and efficient geyser repair solutions",
+
+    "waterpurifierrepair": "Clean water starts with proper purifier servicing",
+
+    "chimneyrepair": "Kitchen chimney cleaning and repair services",
+
+    "tvrepair": "Smart TV and LED repair by experienced technicians",
+
+    "mobilerepair": "Affordable mobile repair for all major brands",
+
+    "laptoprepair": "Laptop troubleshooting and repair made easy",
+
+    "electricalwiring": "Safe and secure electrical wiring solutions",
+
+    "inverterrepair": "Reliable inverter repair and maintenance services",
+
+    "plumbing": "Trusted plumbing services for homes and businesses",
+
+    "watertankcleaning": "Keep your water tank clean and hygienic",
+
+    "leakagefixing": "Quick leakage fixing to prevent water damage",
+
+    "motorpumprepair": "Motor pump repair and maintenance by experts",
+
+    "housecleaning": "Complete house cleaning for a fresh living space",
+
+    "deepcleaning": "Deep cleaning solutions for every corner of your home",
+
+    "kitchencleaning": "Professional kitchen cleaning for a hygienic environment",
+
+    "bathroomcleaning": "Bathroom cleaning services with proper sanitization",
+
+    "sofacleaning": "Sofa cleaning to remove dust and stains effectively",
+
+    "maid": "Reliable maid services for your daily household needs",
+
+    "cook": "Experienced cooks available for home food preparation",
+
+    "babysitter": "Trusted babysitters to care for your children safely",
+
+    "eldercare": "Compassionate elder care services at home",
+
+    "beautician": "Professional beauty services at your convenience",
+
+    "haircut": "Modern haircut and grooming services near you",
+
+    "tuition": "Qualified tutors for personalized learning support",
+
+    "mathtutor": "Math tutors to simplify concepts and improve scores",
+
+    "englishtutor": "Improve spoken and written English with expert tutors",
+
+    "computertraining": "Computer training for students and professionals",
+
+    "carpenter": "Skilled carpenters for furniture and woodwork solutions",
+
+    "painter": "Professional painting services for homes and offices",
+
+    "mason": "Experienced masons for construction and repair work",
+
+    "interiorrepair": "Interior repair solutions for modern homes",
+
+    "tractorrepair": "Tractor repair services for uninterrupted farming work",
+
+    "solarpanel": "Solar panel installation and maintenance services",
+
+    "agriculturepump": "Agriculture pump repair for smooth irrigation",
+
+    "fencing": "Strong and durable fencing solutions for farms and homes"
+  }
+}

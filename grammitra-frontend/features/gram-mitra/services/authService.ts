@@ -1,14 +1,24 @@
 import api from "@/lib/api";
+import { saveToken } from "@/lib/auth";
 
-// ✅ SEND OTP
-export const sendOtp = async (phone: string) => {
-  const res = await api.post("/auth/send-otp", null, {
-    params: { phone },
-  });
-  return res.data;
+// ✅ SEND OTP (UPDATED)
+export const sendOtp = async (
+  phone: string,
+  loginId?: string,
+  mode?: string
+) => {
+  try {
+    const res = await api.post("/auth/send-otp", null, {
+      params: { phone, loginId, mode },
+    });
+    return res.data;
+  } catch (error: any) {
+    console.error("SEND OTP ERROR:", error?.response?.data || error.message);
+    throw error;
+  }
 };
 
-// ✅ VERIFY OTP (FIXED)
+// ✅ VERIFY OTP (LOGIN + REGISTER)
 export const verifyOtp = async (data: {
   phone: string;
   otp: string;
@@ -16,21 +26,64 @@ export const verifyOtp = async (data: {
   role?: string;
   loginId?: string;
 }) => {
-  console.log("📤 VERIFY OTP PAYLOAD:", data);
+  try {
+    const cleanData = Object.fromEntries(
+      Object.entries(data).filter(
+        ([_, v]) => v !== undefined && v !== null && v !== ""
+      )
+    );
 
-  // 🔥 remove undefined/null fields
-  const cleanData = Object.fromEntries(
-    Object.entries(data).filter(([_, v]) => v !== undefined && v !== null)
-  );
+    const res = await api.post("/auth/verify-otp", cleanData);
 
-  const res = await api.post("/auth/verify-otp", cleanData);
-  return res.data;
+    // ✅ SAVE TOKEN (centralized)
+    if (res.data?.token) {
+      saveToken(res.data.token);
+    }
+
+    return res.data;
+  } catch (error: any) {
+    console.error("VERIFY OTP ERROR:", error?.response?.data || error.message);
+    throw error;
+  }
 };
 
 // ✅ FORGOT LOGIN ID
 export const forgotLoginId = async (phone: string) => {
-  const res = await api.post("/auth/forgot-id", null, {
-    params: { phone },
-  });
-  return res.data;
+  try {
+    const res = await api.post("/auth/forgot-id", null, {
+      params: { phone },
+    });
+    return res.data;
+  } catch (error: any) {
+    console.error("FORGOT ID ERROR:", error?.response?.data || error.message);
+    throw error;
+  }
+};
+
+// ===============================
+// 🔥 NEW: GET NEARBY WORKERS (PHASE 3)
+// ===============================
+
+export const getNearbyWorkers = async (
+  lat: number,
+  lng: number,
+  skill?: string
+) => {
+  try {
+    const res = await api.get("/worker/nearby", {
+      params: {
+        lat,
+        lng,
+        skill,
+      },
+    });
+
+    return res.data;
+  } catch (error: any) {
+    console.error(
+      "GET NEARBY WORKERS ERROR:",
+      error?.response?.data || error.message
+    );
+    throw error;
+  }
 };

@@ -1,4 +1,10 @@
-export const categoryIcons: Record<string, string> = {
+import { Skill } from "./skills";
+
+// 🔥 DEFAULT ICON (fallback safe)
+export const DEFAULT_ICON = "🔧";
+
+// 🔥 TYPE-SAFE ICON MAP
+export const categoryIcons: Partial<Record<Skill, string>> = {
   // appliances
   "ac repair": "❄️",
   "refrigerator repair": "🧊",
@@ -6,7 +12,7 @@ export const categoryIcons: Record<string, string> = {
   "microwave repair": "🔥",
   "geyser repair": "🚿",
   "water purifier repair": "💧",
-  "chimney repair": "🏠",
+  "chimney repair": "🏡",
 
   // electronics
   "tv repair": "📺",
@@ -16,10 +22,10 @@ export const categoryIcons: Record<string, string> = {
   "inverter repair": "🔋",
 
   // plumbing
-  plumbing: "🔧",
+  "plumbing": "🔧",
   "water tank cleaning": "🚰",
   "leakage fixing": "💦",
-  "motor pump repair": "🚿",
+  "motor pump repair": "⚙️",
 
   // cleaning
   "house cleaning": "🧹",
@@ -29,28 +35,37 @@ export const categoryIcons: Record<string, string> = {
   "sofa cleaning": "🛋️",
 
   // personal
-  maid: "👩",
-  cook: "👨‍🍳",
-  babysitter: "👶",
+  "maid": "🧕",
+  "cook": "👨‍🍳",
+  "babysitter": "👶",
   "elder care": "👴",
-  beautician: "💄",
-  haircut: "✂️",
+  "beautician": "💄",
+  "haircut": "✂️",
 
   // education
-  tuition: "📚",
+  "tuition": "📚",
   "math tutor": "➗",
   "english tutor": "🔤",
-  "computer training": "💻",
+  "computer training": "🖥️",
 
   // construction
-  carpenter: "🪚",
-  painter: "🎨",
-  mason: "🧱",
+  "carpenter": "🪚",
+  "painter": "🎨",
+  "mason": "🧱",
   "interior repair": "🏠",
 
   // rural
   "tractor repair": "🚜",
   "solar panel": "☀️",
-  "agriculture pump": "💧",
-  fencing: "🚧",
+  "agriculture pump": "💦",
+  "fencing": "🚧",
+};
+
+// 🔥 SAFE ICON GETTER (NO CRASH)
+export const getCategoryIcon = (skill?: string): string => {
+  if (!skill) return DEFAULT_ICON;
+
+  return (
+    categoryIcons[skill.toLowerCase() as Skill] || DEFAULT_ICON
+  );
 };

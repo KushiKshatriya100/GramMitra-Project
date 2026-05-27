@@ -1,7 +1,13 @@
 package com.grammitra.backend.controller;
 
+import com.grammitra.backend.dto.CreateBookingRequest;
 import com.grammitra.backend.model.Booking;
 import com.grammitra.backend.service.BookingService;
+
+import jakarta.validation.Valid;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -9,7 +15,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/booking")
-@CrossOrigin(origins = "*")
 public class BookingController {
 
     private final BookingService bookingService;
@@ -19,18 +24,31 @@ public class BookingController {
     }
 
     // ✅ CREATE BOOKING
+    // SECURITY:
+    //   - userId is taken from the JWT (Authentication.getName()), NOT the
+    //     request. Accepting userId from the client was an IDOR — any
+    //     logged-in user could create bookings on behalf of any other user.
+    //   - workerId + description come from a validated JSON body so they
+    //     never appear in URLs / server access logs / browser history.
     @PostMapping
-    public Booking createBooking(@RequestParam String userId,
-                                 @RequestParam String workerId,
-                                 @RequestParam String description) {
+    public ResponseEntity<Booking> createBooking(
+            @RequestBody @Valid CreateBookingRequest req,
+            Authentication auth
+    ) {
 
-        if (userId == null || workerId == null) {
-            throw new RuntimeException("Invalid booking request");
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
         }
 
-        System.out.println("🔥 BOOKING REQUEST: user=" + userId + " worker=" + workerId);
+        String userId = auth.getName();
 
-        return bookingService.createBooking(userId, workerId, description);
+        return ResponseEntity.ok(
+                bookingService.createBooking(
+                        userId,
+                        req.getWorkerId(),
+                        req.getDescription()
+                )
+        );
     }
 
     // ✅ GET INCOMING BOOKINGS FOR WORKER
@@ -79,61 +97,72 @@ public class BookingController {
         return bookingService.getUserBookings(userId);
     }
 
-    // ✅ ACCEPT BOOKING
+    // ✅ ACCEPT BOOKING — only the assigned worker may accept.
     @PutMapping("/{bookingId}/accept")
-    public Booking acceptBooking(@PathVariable String bookingId) {
-
-        if (bookingId == null || bookingId.trim().isEmpty()) {
-            throw new RuntimeException("Invalid bookingId");
-        }
-
-        return bookingService.updateStatus(bookingId, "ACCEPTED");
-    }
-
-    // ✅ REJECT BOOKING
-    @PutMapping("/{bookingId}/reject")
-    public Booking rejectBooking(@PathVariable String bookingId) {
-
-        if (bookingId == null || bookingId.trim().isEmpty()) {
-            throw new RuntimeException("Invalid bookingId");
-        }
-
-        return bookingService.updateStatus(bookingId, "REJECTED");
-    }
-
-
-
-    // ✅ MARK COMPLETED
-    @PutMapping("/{bookingId}/complete")
-    public Booking completeBooking(
-            @PathVariable String bookingId
+    public ResponseEntity<Booking> acceptBooking(
+            @PathVariable String bookingId,
+            Authentication auth
     ) {
-
-        if (
-                bookingId == null ||
-                        bookingId.trim().isEmpty()
-        ) {
-
-            throw new RuntimeException(
-                    "Invalid bookingId"
-            );
+        if (bookingId == null || bookingId.trim().isEmpty()) {
+            throw new RuntimeException("Invalid bookingId");
         }
-
-        return bookingService.updateStatus(
-                bookingId,
-                "COMPLETED"
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(
+                bookingService.updateStatus(bookingId, "ACCEPTED", auth.getName())
         );
     }
 
-    // 💰 CREATE RAZORPAY ORDER
-    @PostMapping("/create-order/{bookingId}")
-    public Map<String, Object> createOrder(@PathVariable String bookingId) {
-
+    // ✅ REJECT BOOKING — only the assigned worker may reject.
+    @PutMapping("/{bookingId}/reject")
+    public ResponseEntity<Booking> rejectBooking(
+            @PathVariable String bookingId,
+            Authentication auth
+    ) {
         if (bookingId == null || bookingId.trim().isEmpty()) {
             throw new RuntimeException("Invalid bookingId");
         }
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(
+                bookingService.updateStatus(bookingId, "REJECTED", auth.getName())
+        );
+    }
 
-        return bookingService.createOrder(bookingId);
+    // ✅ MARK COMPLETED — only the booking's customer may complete.
+    @PutMapping("/{bookingId}/complete")
+    public ResponseEntity<Booking> completeBooking(
+            @PathVariable String bookingId,
+            Authentication auth
+    ) {
+        if (bookingId == null || bookingId.trim().isEmpty()) {
+            throw new RuntimeException("Invalid bookingId");
+        }
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(
+                bookingService.updateStatus(bookingId, "COMPLETED", auth.getName())
+        );
+    }
+
+    // 💰 CREATE RAZORPAY ORDER — only the booking's customer may pay.
+    @PostMapping("/create-order/{bookingId}")
+    public ResponseEntity<Map<String, Object>> createOrder(
+            @PathVariable String bookingId,
+            Authentication auth
+    ) {
+        if (bookingId == null || bookingId.trim().isEmpty()) {
+            throw new RuntimeException("Invalid bookingId");
+        }
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(
+                bookingService.createOrder(bookingId, auth.getName())
+        );
     }
 
     // 💰 VERIFY PAYMENT

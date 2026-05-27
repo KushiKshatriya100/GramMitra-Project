@@ -45,7 +45,7 @@ export default function JobList({ role }: { role: "worker" | "employer" }) {
 
   if (jobs.length === 0) {
     return (
-      <p className="text-center text-gray-500">
+      <p className="text-center text-[var(--text-soft)]">
         {t("jobs.noJobs")}
       </p>
     );
@@ -63,7 +63,7 @@ export default function JobList({ role }: { role: "worker" | "employer" }) {
               {t("jobs.job")} #{job.id.slice(-5)}
             </p>
 
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-[var(--text-soft)]">
               {t("jobs.status")}:{" "}
               <span className="font-medium">
                 {job.status}
@@ -71,7 +71,7 @@ export default function JobList({ role }: { role: "worker" | "employer" }) {
             </p>
           </div>
 
-          <div className="text-sm text-gray-400">
+          <div className="text-sm text-[var(--text-muted)]">
             {job.createdAt
               ? new Date(job.createdAt).toLocaleDateString()
               : ""}

@@ -5,10 +5,11 @@ import React from "react";
 
 type ButtonProps = {
   children: React.ReactNode;
-  onClick?: () => void;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
   className?: string;
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
+  variant?: "primary" | "secondary" | "outline";
 };
 
 export default function Button({
@@ -17,6 +18,7 @@ export default function Button({
   className,
   disabled = false,
   type = "button",
+  variant = "primary",
 }: ButtonProps) {
   return (
     <button
@@ -29,7 +31,11 @@ export default function Button({
         "relative px-6 py-2.5 rounded-full font-medium",
 
         // THEME COLORS
-        "bg-[var(--primary)] text-white",
+        variant === "primary" && "bg-[var(--primary)] text-white",
+        variant === "secondary" &&
+          "bg-white text-[var(--primary)] border border-[var(--primary)]",
+        variant === "outline" &&
+          "bg-transparent text-[var(--primary)] border border-[var(--primary)] shadow-none",
 
         // DEPTH
         "shadow-[0_4px_14px_rgba(0,0,0,0.15)]",

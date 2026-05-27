@@ -21,42 +21,32 @@ export type Review = {
 };
 
 // ✅ CREATE REVIEW
+// Body-encoded request. The reviewer (userId) is derived from the JWT on
+// the server — we never send it from the client.
 export const createReview = async (
   bookingId: string,
   rating: number,
   comment: string
 ) => {
 
-  // ✅ BASIC VALIDATION
   if (!bookingId) {
     throw new Error("Invalid booking");
   }
 
   if (rating < 1 || rating > 5) {
-    throw new Error(
-      "Rating must be between 1 and 5"
-    );
+    throw new Error("Rating must be between 1 and 5");
   }
 
   if (!comment?.trim()) {
-    throw new Error(
-      "Review comment required"
-    );
+    throw new Error("Review comment required");
   }
 
   try {
-
-    const response = await api.post(
-      "/review",
-      null,
-      {
-        params: {
-          bookingId,
-          rating,
-          comment: comment.trim(),
-        },
-      }
-    );
+    const response = await api.post("/review", {
+      bookingId,
+      rating,
+      comment: comment.trim(),
+    });
 
     return response.data;
 
@@ -67,59 +57,33 @@ export const createReview = async (
       error?.response?.data || error.message
     );
 
-    const message =
+    const status: number = error?.response?.status ?? 0;
+    const serverMessage: string =
+      error?.response?.data?.error ||
       error?.response?.data?.message ||
       error?.message ||
       "";
 
-    // ✅ FRIENDLY ERRORS
-    if (
-      message.includes(
-        "Review already submitted"
-      )
-    ) {
-
-      throw new Error(
-        "Review already submitted"
-      );
+    // Map the backend's status semantics to user-facing copy. The status
+    // codes here are the ones ReviewService now emits via
+    // ResponseStatusException — they're stable, the strings are not.
+    if (status === 403) {
+      throw new Error("Only the booking's customer can review it");
+    }
+    if (status === 409) {
+      if (/already/i.test(serverMessage)) {
+        throw new Error("A review has already been submitted for this booking");
+      }
+      if (/completed/i.test(serverMessage)) {
+        throw new Error("Booking must be completed before it can be reviewed");
+      }
+      throw new Error(serverMessage || "Review cannot be submitted in the current state");
+    }
+    if (status === 404) {
+      throw new Error("Booking not found");
     }
 
-    if (
-      message.includes(
-        "Booking not completed yet"
-      )
-    ) {
-
-      throw new Error(
-        "Booking not completed yet"
-      );
-    }
-
-    if (
-      message.includes(
-        "Only booking owner can add review"
-      )
-    ) {
-
-      throw new Error(
-        "Only booking owner can review"
-      );
-    }
-
-    if (
-      message.includes(
-        "Booking not found"
-      )
-    ) {
-
-      throw new Error(
-        "Booking not found"
-      );
-    }
-
-    throw new Error(
-      "Failed to submit review"
-    );
+    throw new Error(serverMessage || "Failed to submit review");
   }
 };
 

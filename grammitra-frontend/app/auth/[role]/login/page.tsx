@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { sendOtp } from "@/features/gram-mitra/services/authService";
 import { useTranslation } from "@/shared/i18n/useTranslation";
 import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const router = useRouter();
+  const params = useParams();
+  const role = (params?.role as string) || "user";
   const { t, lang } = useTranslation();
 
   const [phone, setPhone] = useState("");
@@ -16,8 +18,29 @@ export default function LoginPage() {
 
   if (!lang) return null;
 
+  // Match the backend's "User not found" message however it gets surfaced —
+  // axios may wrap it, or it may come through as the raw business error.
+  const isUserNotFoundError = (err: any): boolean => {
+    const candidates = [
+      err?.message,
+      err?.response?.data?.error,
+      err?.response?.data?.message,
+      err?.original?.response?.data?.error,
+    ];
+    return candidates.some(
+      (m) => typeof m === "string" && /user not found/i.test(m)
+    );
+  };
+
   const handleLogin = async () => {
-    if (!phone || !loginId) {
+    // Normalize before sending so a trailing space from autofill or a
+    // lowercase loginId from a password manager can't trigger a backend
+    // rejection. The backend now compares case-insensitively too, but
+    // fixing this on both sides means the bug stays dead.
+    const cleanPhone = phone.trim();
+    const cleanLoginId = loginId.trim().toUpperCase();
+
+    if (!cleanPhone || !cleanLoginId) {
       toast.error(t("auth.fillAll"));
       return;
     }
@@ -25,19 +48,41 @@ export default function LoginPage() {
     try {
       setLoading(true);
 
-      const res: any = await sendOtp(phone, loginId, "login");
+      const res: any = await sendOtp(cleanPhone, cleanLoginId, "login");
 
       if (!res.userExists) {
         toast.error(t("auth.userNotFound"));
         return;
       }
 
-      // ✅ FIXED
       router.push(
-        `/auth/verify-otp?mode=login&phone=${phone}&loginId=${loginId}`
+        `/auth/verify-otp?mode=login&phone=${cleanPhone}&loginId=${cleanLoginId}`
       );
 
     } catch (err: any) {
+      // Most common 4xx here is "User not found" — show a friendly toast
+      // with a clickable Sign Up CTA instead of a dead-end raw error.
+      if (isUserNotFoundError(err)) {
+        toast(
+          (toastInstance) => (
+            <div className="flex flex-col gap-2">
+              <span>{t("auth.userNotFound")}</span>
+              <button
+                onClick={() => {
+                  toast.dismiss(toastInstance.id);
+                  router.push(`/auth/${role}/register`);
+                }}
+                className="text-left text-sm font-semibold text-[var(--primary)] hover:underline"
+              >
+                {t("auth.signUpInstead")} →
+              </button>
+            </div>
+          ),
+          { icon: "👤", duration: 6000 }
+        );
+        return;
+      }
+
       toast.error(err?.message || t("auth.loginFailed"));
     } finally {
       setLoading(false);
@@ -78,7 +123,7 @@ export default function LoginPage() {
 
         <p
           onClick={() => router.push("/auth/forgot-id")}
-          className="text-sm text-blue-600 cursor-pointer text-right hover:underline"
+          className="text-sm text-[var(--primary)] cursor-pointer text-right hover:underline"
         >
           {t("auth.forgotId")}
         </p>

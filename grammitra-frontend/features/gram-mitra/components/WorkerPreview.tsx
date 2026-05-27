@@ -51,7 +51,7 @@ export default function WorkerPreview({ skill }: { skill: string }) {
     const skillKey = mapSkillKey(skill);
     const translatedSkill = t(skillKey);
     return (
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-[var(--text-soft)]">
         {t("worker.noWorkers")} "
         {translatedSkill === skillKey ? skill : translatedSkill}"
       </p>

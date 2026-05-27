@@ -1,0 +1,27 @@
+# Set these values as AWS ECS task environment variables/secrets.
+# Do not copy real secrets into this file.
+
+SPRING_PROFILES_ACTIVE=prod
+PORT=8080
+
+MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/grammitra?retryWrites=true&w=majority
+MONGODB_DB=grammitra
+
+JWT_SECRET=<openssl-rand-base64-48>
+JWT_EXPIRATION_MS=7200000
+
+APP_CORS_ALLOWED_ORIGINS=https://grammitra.example.com,https://www.grammitra.example.com
+
+REDIS_HOST=<elasticache-primary-endpoint>
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_AUTH_TOKEN=<secret>
+TWILIO_PHONE_NUMBER=+1XXXXXXXXXX
+
+RAZORPAY_KEY=rzp_live_xxxxxxxxxxxxxxxx
+RAZORPAY_SECRET=<secret>
+
+GEMINI_API_KEY=<secret>
+GEMINI_API_URL=https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent

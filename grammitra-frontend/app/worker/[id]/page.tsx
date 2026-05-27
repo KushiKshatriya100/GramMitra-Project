@@ -32,6 +32,8 @@ import {
 
 import {
   getUserIdFromToken,
+  isAuthenticated,
+  clearSession,
 } from "@/lib/auth";
 
 import toast from "react-hot-toast";
@@ -43,6 +45,9 @@ import {
 import {
   mapSkillKey,
 } from "@/features/gram-mitra/utils/translationMapper";
+
+import { useReverseGeocode } from "@/shared/geo/useReverseGeocode";
+import { parseCoords } from "@/shared/geo/reverseGeocode";
 
 type Worker = {
   id: string;
@@ -66,6 +71,10 @@ type Worker = {
   experience?: string | number;
 
   location?: string;
+
+  latitude?: number;
+
+  longitude?: number;
 
   rating?: number;
 
@@ -120,6 +129,36 @@ export default function WorkerDetailsPage() {
     setBookingLoading,
   ] = useState(false);
 
+  // ⚠️ Rules of Hooks: this hook MUST run on every render, before any
+  // conditional return below. The hook itself no-ops when coords are
+  // undefined/invalid, so calling it pre-worker-load is safe.
+  //
+  // A worker's `location` is a free-text field, but in practice it sometimes
+  // contains raw "lat, lng" instead of a place name. Detect that here so we
+  // can geocode those values rather than displaying the numbers verbatim.
+  const locationCoordsEarly = parseCoords(worker?.location);
+  const latEarly =
+    typeof worker?.latitude === "number" && worker.latitude !== 0
+      ? worker.latitude
+      : locationCoordsEarly?.lat;
+  const lngEarly =
+    typeof worker?.longitude === "number" && worker.longitude !== 0
+      ? worker.longitude
+      : locationCoordsEarly?.lng;
+
+  // "Typed location" means a human-readable string — NOT a coord pair.
+  const hasTypedLocationEarly =
+    !!worker?.location?.trim() && !locationCoordsEarly;
+  const hasCoordsEarly =
+    typeof latEarly === "number" &&
+    typeof lngEarly === "number" &&
+    !(latEarly === 0 && lngEarly === 0);
+
+  const geocode = useReverseGeocode(latEarly, lngEarly, {
+    enabled: hasCoordsEarly && !hasTypedLocationEarly,
+    lang: lang === "hi" ? "hi" : "en",
+  });
+
   useEffect(() => {
 
     const fetchWorker =
@@ -159,12 +198,7 @@ export default function WorkerDetailsPage() {
             error
           );
 
-          toast.error(
-            t(
-              "worker.loadError"
-            ) ||
-              "Failed to load worker"
-          );
+          toast.error(t("worker.loadError"));
 
         } finally {
 
@@ -181,24 +215,23 @@ export default function WorkerDetailsPage() {
   const handleBooking =
     async () => {
 
-      const userId =
-        getUserIdFromToken();
-
-      if (!userId) {
-
+      // Single gate: must have a live session blob (loginId + non-expired
+      // exp) before booking. Without this, an expired session would fire
+      // a doomed POST, hit a 401, and leave the user staring at a toast.
+      if (!isAuthenticated()) {
+        clearSession();
         toast(
-          t(
-            "auth.loginRequired"
-          ),
-          {
-            icon: "⚠️",
-          }
+          t("auth.loginRequired"),
+          { icon: "⚠️" }
         );
+        router.push("/auth/user/login");
+        return;
+      }
 
-        router.push(
-          "/auth/user/login"
-        );
-
+      const userId = getUserIdFromToken();
+      if (!userId) {
+        // Defensive — token said valid but no usable sub claim.
+        router.push("/auth/user/login");
         return;
       }
 
@@ -295,8 +328,7 @@ export default function WorkerDetailsPage() {
 
           <p className="text-[var(--text-soft)]">
 
-            Worker profile could not
-            be found.
+            {t("worker.notFoundMessage")}
           </p>
         </div>
       </div>
@@ -322,6 +354,41 @@ export default function WorkerDetailsPage() {
       }
     ) || [];
 
+  // Display values derived from the geocode hook lifted to the top of the
+  // component. By this point `worker` is guaranteed non-null (early returns
+  // above), so these reads are safe.
+  const locationCoords = parseCoords(worker.location);
+  const lat =
+    typeof worker.latitude === "number" && worker.latitude !== 0
+      ? worker.latitude
+      : locationCoords?.lat;
+  const lng =
+    typeof worker.longitude === "number" && worker.longitude !== 0
+      ? worker.longitude
+      : locationCoords?.lng;
+
+  const hasTypedLocation =
+    !!worker.location?.trim() && !locationCoords;
+  const hasCoords =
+    typeof lat === "number" &&
+    typeof lng === "number" &&
+    !(lat === 0 && lng === 0);
+
+  const resolvedLocation = hasTypedLocation
+    ? worker.location!.trim()
+    : geocode.status === "ready"
+      ? geocode.address.label
+      : null;
+
+  const resolvedDetail =
+    !hasTypedLocation && geocode.status === "ready"
+      ? geocode.address.detail
+      : null;
+
+  const mapUrl = hasCoords
+    ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+    : null;
+
   const workerImage =
     worker.profileImage &&
     worker.profileImage.trim() !==
@@ -335,9 +402,9 @@ export default function WorkerDetailsPage() {
       <Navbar />
 
       {/* HERO */}
-      <section className="relative overflow-hidden border-b border-[var(--border)] bg-gradient-to-br from-[#F7EFE5] via-[#F5EFE6] to-[#EFE3D4]">
+      <section className="relative overflow-hidden border-b border-[var(--border)] bg-[var(--bg-soft)]">
 
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_right,#A0522D_0%,transparent_35%)]" />
+        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_right,var(--primary)_0%,transparent_35%)]" />
 
         <div className="relative max-w-6xl mx-auto px-6 pt-28 pb-16">
 
@@ -356,7 +423,7 @@ export default function WorkerDetailsPage() {
             {/* PROFILE IMAGE */}
             <div className="relative">
 
-              <div className="relative h-[360px] w-full overflow-hidden rounded-[32px] shadow-2xl border-4 border-white bg-white">
+              <div className="relative h-[360px] w-full overflow-hidden rounded-[32px] shadow-[var(--shadow-medium)] border-4 border-[var(--card)] bg-[var(--card)]">
 
                 <Image
                   src={workerImage}
@@ -372,11 +439,11 @@ export default function WorkerDetailsPage() {
 
               {/* ONLINE */}
               {worker.availability && (
-                <div className="absolute top-5 right-5 flex items-center gap-2 rounded-full bg-green-100 px-4 py-2 shadow-sm">
+                <div className="absolute top-5 right-5 flex items-center gap-2 rounded-full bg-[var(--success-soft)] px-4 py-2 shadow-[var(--shadow-soft)] border border-[var(--success)]/30">
 
-                  <span className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-[var(--success)] animate-pulse" />
 
-                  <span className="text-xs font-bold text-green-700">
+                  <span className="text-xs font-bold text-[var(--success)]">
 
                     {t(
                       "worker.available"
@@ -390,7 +457,7 @@ export default function WorkerDetailsPage() {
             <div>
 
               {/* VERIFIED */}
-              <div className="inline-flex items-center gap-2 rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700 mb-5">
+              <div className="inline-flex items-center gap-2 rounded-full bg-[var(--success-soft)] px-4 py-2 text-sm font-semibold text-[var(--success)] mb-5 border border-[var(--success)]/30">
 
                 ✓ {t("worker.verified")}
               </div>
@@ -414,11 +481,11 @@ export default function WorkerDetailsPage() {
                       className="
                       rounded-full
                       border border-[var(--border)]
-                      bg-white/90
+                      bg-[var(--card)]/90
                       px-4 py-2
                       text-sm font-medium
                       text-[var(--primary)]
-                      shadow-sm
+                      shadow-[var(--shadow-soft)]
                     "
                     >
                       {skill}
@@ -431,9 +498,9 @@ export default function WorkerDetailsPage() {
               <div className="flex flex-wrap items-center gap-4 mt-6">
 
                 {/* RATING */}
-                <div className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3 shadow-sm border border-[var(--border)]">
+                <div className="flex items-center gap-2 rounded-2xl bg-[var(--card)] px-4 py-3 shadow-[var(--shadow-soft)] border border-[var(--border)]">
 
-                  <span className="text-yellow-500 text-lg">
+                  <span className="text-[var(--warning)] text-lg">
 
                     ★
                   </span>
@@ -463,7 +530,7 @@ export default function WorkerDetailsPage() {
                 </div>
 
                 {/* EXPERIENCE */}
-                <div className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3 shadow-sm border border-[var(--border)]">
+                <div className="flex items-center gap-2 rounded-2xl bg-[var(--card)] px-4 py-3 shadow-[var(--shadow-soft)] border border-[var(--border)]">
 
                   <span className="text-lg">
                     🛠
@@ -490,7 +557,7 @@ export default function WorkerDetailsPage() {
                 </div>
 
                 {/* PRICE */}
-                <div className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3 shadow-sm border border-[var(--border)]">
+                <div className="flex items-center gap-2 rounded-2xl bg-[var(--card)] px-4 py-3 shadow-[var(--shadow-soft)] border border-[var(--border)]">
 
                   <span className="text-lg">
                     ₹
@@ -516,39 +583,58 @@ export default function WorkerDetailsPage() {
               </div>
 
               {/* LOCATION */}
-              <div className="mt-7 flex items-center gap-3 text-[var(--text-soft)]">
+              <div className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-1 text-[var(--text-soft)]">
 
-                <span className="text-xl">
-                  📍
-                </span>
+                <span className="text-xl leading-none" aria-hidden>📍</span>
 
-                <p className="text-base">
+                <div className="flex flex-col leading-tight">
+                  {geocode.status === "loading" && !resolvedLocation ? (
+                    <span
+                      className="text-base inline-block h-4 w-44 rounded bg-[var(--bg-soft)] animate-pulse"
+                      aria-label={t("worker.locating")}
+                    />
+                  ) : (
+                    <p className="text-base text-[var(--text)] font-medium">
+                      {resolvedLocation || t("worker.nearby")}
+                    </p>
+                  )}
+                  {resolvedDetail && (
+                    <p className="text-xs text-[var(--text-muted)]">
+                      {resolvedDetail}
+                    </p>
+                  )}
+                </div>
 
-                  {worker.location ||
-                    t(
-                      "worker.nearby"
-                    )}
-                </p>
+                {mapUrl && (
+                  <a
+                    href={mapUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="
+                      text-xs font-semibold text-[var(--primary)]
+                      hover:underline whitespace-nowrap
+                    "
+                  >
+                    {t("worker.viewOnMap")} →
+                  </a>
+                )}
               </div>
 
               {/* BIO */}
-              <div className="mt-8 rounded-[28px] border border-[var(--border)] bg-white/80 p-6 shadow-sm">
+              <div className="mt-8 rounded-[28px] border border-[var(--border)] bg-[var(--card)]/80 p-6 shadow-[var(--shadow-soft)]">
 
                 <h3 className="text-lg font-bold text-[var(--text)] mb-3">
 
-                  About Worker
+                  {t("worker.aboutWorker")}
                 </h3>
 
                 <p className="text-[15px] leading-8 text-[var(--text-soft)]">
 
                   {worker.bio ||
                     worker.description ||
-                    `Experienced professional specializing in ${
-                      translatedSkills?.[0] ||
-                      t(
-                        "worker.service"
-                      )
-                    } services with trusted local expertise.`}
+                    t("worker.defaultBio", {
+                      skill: translatedSkills?.[0] || t("worker.service"),
+                    })}
                 </p>
               </div>
 
@@ -557,26 +643,56 @@ export default function WorkerDetailsPage() {
               {/* CONTACT */}
               <div className="mt-5 flex flex-wrap items-center gap-4">
 
-                <div className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4 border border-[var(--border)] shadow-sm">
-                  <span className="text-xl">📞</span>
+                {(() => {
+                  const phone = worker.phone?.trim();
+                  const telHref = phone ? `tel:${phone.replace(/\s+/g, "")}` : undefined;
+                  const card = (
+                    <>
+                      <span className="text-xl" aria-hidden>📞</span>
+                      <div className="min-w-0">
+                        <p className="text-xs text-[var(--text-soft)]">
+                          {t("worker.contactNumber")}
+                        </p>
+                        <p className="font-semibold text-[var(--text)] truncate">
+                          {phone || t("worker.notAvailable")}
+                        </p>
+                      </div>
+                      {telHref && (
+                        <span className="ml-2 hidden sm:inline-flex items-center gap-1 text-xs font-semibold text-[var(--primary)]">
+                          {t("worker.callWorker")} →
+                        </span>
+                      )}
+                    </>
+                  );
+                  return telHref ? (
+                    <a
+                      href={telHref}
+                      aria-label={`${t("worker.callWorker")} ${phone}`}
+                      className="
+                        group flex items-center gap-3 rounded-2xl
+                        bg-[var(--card)] px-5 py-4
+                        border border-[var(--border)]
+                        shadow-[var(--shadow-soft)]
+                        hover:shadow-[var(--shadow-medium)] hover:border-[var(--primary)]
+                        focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]/60
+                        transition
+                      "
+                    >
+                      {card}
+                    </a>
+                  ) : (
+                    <div className="flex items-center gap-3 rounded-2xl bg-[var(--card)] px-5 py-4 border border-[var(--border)] shadow-[var(--shadow-soft)]">
+                      {card}
+                    </div>
+                  );
+                })()}
+
+                <div className="flex items-center gap-3 rounded-2xl bg-[var(--card)] px-5 py-4 border border-[var(--border)] shadow-[var(--shadow-soft)]">
+                  <span className="text-xl" aria-hidden>✅</span>
 
                   <div>
                     <p className="text-xs text-[var(--text-soft)]">
-                      Contact Number
-                    </p>
-
-                    <p className="font-semibold text-[var(--text)]">
-                      {worker.phone || "Not Available"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4 border border-[var(--border)] shadow-sm">
-                  <span className="text-xl">✅</span>
-
-                  <div>
-                    <p className="text-xs text-[var(--text-soft)]">
-                      Completed Jobs
+                      {t("worker.completedJobs")}
                     </p>
 
                     <p className="font-semibold text-[var(--text)]">
@@ -605,7 +721,7 @@ export default function WorkerDetailsPage() {
                   variant="secondary"
                   className="sm:w-[180px] h-14 rounded-2xl font-semibold"
                 >
-                  Browse Services
+                  {t("worker.browseServices")}
                 </Button>
 
                 <Button
@@ -638,7 +754,7 @@ export default function WorkerDetailsPage() {
         <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5 mb-10">
 
           {/* WAGE */}
-          <div className="rounded-[28px] border border-[var(--border)] bg-white p-6 shadow-sm">
+          <div className="rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-6 shadow-[var(--shadow-soft)]">
 
             <p className="text-sm text-[var(--text-soft)] mb-2">
 
@@ -662,7 +778,7 @@ export default function WorkerDetailsPage() {
           </div>
 
           {/* EXPERIENCE */}
-          <div className="rounded-[28px] border border-[var(--border)] bg-white p-6 shadow-sm">
+          <div className="rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-6 shadow-[var(--shadow-soft)]">
 
             <p className="text-sm text-[var(--text-soft)] mb-2">
 
@@ -681,12 +797,12 @@ export default function WorkerDetailsPage() {
 
             <p className="text-sm text-[var(--text-soft)] mt-1">
 
-              Years Experience
+              {t("worker.yearsExperienceLabel")}
             </p>
           </div>
 
           {/* AVAILABILITY */}
-          <div className="rounded-[28px] border border-[var(--border)] bg-white p-6 shadow-sm">
+          <div className="rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-6 shadow-[var(--shadow-soft)]">
 
             <p className="text-sm text-[var(--text-soft)] mb-2">
 
@@ -698,8 +814,8 @@ export default function WorkerDetailsPage() {
             <h3
               className={`text-2xl font-bold ${
                 worker.availability
-                  ? "text-green-600"
-                  : "text-red-500"
+                  ? "text-[var(--success)]"
+                  : "text-[var(--danger)]"
               }`}
             >
               {worker.availability
@@ -713,19 +829,19 @@ export default function WorkerDetailsPage() {
 
             <p className="text-sm text-[var(--text-soft)] mt-1">
 
-              Current Status
+              {t("worker.currentStatus")}
             </p>
           </div>
 
           {/* TOTAL REVIEWS */}
-          <div className="rounded-[28px] border border-[var(--border)] bg-white p-6 shadow-sm">
+          <div className="rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-6 shadow-[var(--shadow-soft)]">
 
             <p className="text-sm text-[var(--text-soft)] mb-2">
 
-              Total Reviews
+              {t("worker.totalReviewsLabel")}
             </p>
 
-            <h3 className="text-2xl font-bold text-yellow-500">
+            <h3 className="text-2xl font-bold text-[var(--warning)]">
 
               {
                 worker.totalReviews ||
@@ -735,13 +851,13 @@ export default function WorkerDetailsPage() {
 
             <p className="text-sm text-[var(--text-soft)] mt-1">
 
-              Customer Ratings
+              {t("worker.customerRatings")}
             </p>
           </div>
         </div>
 
         {/* ⭐ REVIEWS SECTION */}
-        <div className="rounded-[32px] border border-[var(--border)] bg-white p-8 shadow-sm">
+        <div className="rounded-[32px] border border-[var(--border)] bg-[var(--card)] p-8 shadow-[var(--shadow-soft)]">
 
           <div className="flex items-center justify-between mb-8">
 
@@ -749,21 +865,20 @@ export default function WorkerDetailsPage() {
 
               <h2 className="text-2xl font-bold text-[var(--text)]">
 
-                Customer Reviews
+                {t("worker.customerReviews")}
               </h2>
 
               <p className="text-[var(--text-soft)] mt-1">
 
-                Real feedback from
-                verified customers
+                {t("worker.verifiedFeedback")}
               </p>
             </div>
 
-            <div className="rounded-2xl bg-yellow-50 px-5 py-3 border border-yellow-100">
+            <div className="rounded-2xl bg-[var(--warning-soft)] px-5 py-3 border border-[var(--warning)]/30">
 
               <div className="flex items-center gap-2">
 
-                <span className="text-yellow-500 text-xl">
+                <span className="text-[var(--warning)] text-xl">
 
                   ★
                 </span>
@@ -790,13 +905,12 @@ export default function WorkerDetailsPage() {
 
               <h3 className="text-xl font-semibold text-[var(--text)] mb-2">
 
-                No Reviews Yet
+                {t("worker.noReviews")}
               </h3>
 
               <p className="text-[var(--text-soft)]">
 
-                This worker has not
-                received reviews yet.
+                {t("worker.noReviewsSubtitle")}
               </p>
             </div>
           )}
@@ -833,12 +947,12 @@ export default function WorkerDetailsPage() {
 
                           <h4 className="font-semibold text-[var(--text)]">
 
-                            Customer
+                            {t("worker.customer")}
                           </h4>
 
                           <p className="text-xs text-[var(--text-soft)]">
 
-                            Verified Booking
+                            {t("worker.verifiedBooking")}
                           </p>
                         </div>
                       </div>
@@ -856,8 +970,8 @@ export default function WorkerDetailsPage() {
                             className={`text-xl ${
                               star <=
                               review.rating
-                                ? "text-yellow-400"
-                                : "text-gray-300"
+                                ? "text-[var(--warning)]"
+                                : "text-[var(--border)]"
                             }`}
                           >
                             ★

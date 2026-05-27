@@ -17,13 +17,29 @@
     "subtitle": "अपने आसपास भरोसेमंद कामगार खोजें — आसान, तेज, भरोसेमंद",
     "search": "खोजें",
     "placeholder": "इलेक्ट्रीशियन, प्लंबर खोजें...",
-    "trust": "विश्वसनीय स्थानीय कामगार • सत्यापित सेवाएं"
+    "trust": "विश्वसनीय स्थानीय कामगार • सत्यापित सेवाएं",
+    "noMatch": "\"{{query}}\" से कोई सेवा मेल नहीं खाती।",
+    "noMatchHint": "\"एसी\", \"प्लंबर\", \"सफाई\", या \"ट्यूटर\" आज़माएँ।"
   },
 
   "services": {
     "title": "लोकप्रिय सेवाएं",
     "explore": "देखें →",
-    "noWorkers": "कोई कामगार नहीं मिला"
+    "noWorkers": "कोई कामगार नहीं मिला",
+    "subtitle": "भरोसेमंद पेशेवर आपकी मदद के लिए तैयार हैं",
+    "findTrusted": "अपने आसपास {{skill}} सेवाओं के लिए भरोसेमंद और सत्यापित स्थानीय कामगार खोजें।",
+    "noWorkersNear": "अभी आपके क्षेत्र में {{skill}} सेवाओं के लिए कोई कामगार नहीं मिला।",
+    "availableWorkers": "उपलब्ध कामगार",
+    "verifiedProfiles": "सत्यापित प्रोफ़ाइल",
+    "activeResults": "{{count}} सक्रिय परिणाम",
+    "exploreOther": "अन्य सेवाएँ देखें",
+    "resultsCount": "{{count}} कामगार उपलब्ध",
+    "trustedLocal": "भरोसेमंद स्थानीय सेवाएँ",
+    "skilledNearby": "आपके आस-पास उपलब्ध कुशल कामगार",
+    "tryNearbyOrOther": "आस-पास के क्षेत्र खोजें या GramMitra पर उपलब्ध मिलती-जुलती सेवाओं को देखें।",
+    "searchFailed": "अभी कामगार लोड नहीं हो सके। कृपया दोबारा प्रयास करें।",
+    "forbidden": "यह सेवा फ़िलहाल उपलब्ध नहीं है। कृपया कुछ देर बाद पुनः प्रयास करें।",
+    "networkError": "अपना इंटरनेट कनेक्शन जाँचें और पुनः प्रयास करें।"
   },
 
   "worker": {
@@ -76,7 +92,29 @@
 
     "perDay": "/दिन",
 
-    "localWorker": "स्थानीय कामगार"
+    "localWorker": "स्थानीय कामगार",
+    "aboutWorker": "कामगार के बारे में",
+    "contactNumber": "संपर्क नंबर",
+    "notAvailable": "उपलब्ध नहीं",
+    "completedJobs": "पूर्ण कार्य",
+    "browseServices": "सेवाएँ देखें",
+    "yearsExperienceLabel": "वर्षों का अनुभव",
+    "currentStatus": "वर्तमान स्थिति",
+    "totalReviewsLabel": "कुल समीक्षाएँ",
+    "customerRatings": "ग्राहक रेटिंग",
+    "verifiedFeedback": "सत्यापित ग्राहकों की वास्तविक प्रतिक्रिया",
+    "defaultBio": "{{skill}} सेवाओं में विशेषज्ञ अनुभवी पेशेवर, भरोसेमंद स्थानीय कौशल के साथ।",
+    "notFoundMessage": "कामगार प्रोफ़ाइल नहीं मिल सकी।",
+    "customer": "ग्राहक",
+    "verifiedBooking": "सत्यापित बुकिंग",
+    "expLabel": "अनुभव",
+    "yearsShort": "+ वर्ष",
+    "wageLabel": "मजदूरी",
+    "defaultDescription": "{{skill}} में विशेषज्ञ, उच्च गुणवत्ता वाली सेवा प्रदान करते हैं।",
+    "locating": "स्थान खोज रहे हैं…",
+    "viewOnMap": "मैप पर देखें",
+    "callWorker": "कॉल करें",
+    "phoneHidden": "बुकिंग के बाद उपलब्ध"
   },
 
   "common": {
@@ -143,7 +181,16 @@
 
     "failedOtp": "OTP सत्यापन विफल",
 
-    "phoneRequired": "फोन नंबर आवश्यक है"
+    "phoneRequired": "फोन नंबर आवश्यक है",
+    "copied": "लॉगिन आईडी कॉपी हो गई",
+    "copyFailed": "कॉपी नहीं हो पाई",
+    "invalidResponse": "सर्वर से अमान्य प्रतिक्रिया",
+    "signUpInstead": "इसके बजाय साइन अप करें",
+    "registrationSuccess": "पंजीकरण सफल हुआ",
+    "saveLIdWarning": "कृपया अपनी लॉगिन आईडी सावधानी से सहेजें।",
+    "yourLoginIdLabel": "आपकी लॉगिन आईडी",
+    "copyId": "लॉगिन आईडी कॉपी करें",
+    "continue": "आगे बढ़ें"
   },
 
   "profile": {
@@ -227,7 +274,11 @@
 
     "locationFailed": "लोकेशन प्राप्त नहीं हो सकी",
 
-    "locationUnsupported": "लोकेशन समर्थित नहीं है"
+    "locationUnsupported": "लोकेशन समर्थित नहीं है",
+
+    "useMyLocation": "📍 मेरी लोकेशन उपयोग करें",
+
+    "gettingLocation": "प्राप्त हो रहा है..."
   },
 
   "dashboard": {
@@ -251,7 +302,19 @@
 
     "myBookings": "मेरी बुकिंग्स",
 
-    "incomingJobs": "आने वाले कार्य"
+    "incomingJobs": "आने वाले कार्य",
+
+    "noBookingsFound": "कोई बुकिंग नहीं मिली",
+
+    "reviewPendingBody": "आपकी {{count}} पूर्ण बुकिंग समीक्षा का इंतज़ार कर रही है।",
+
+    "myBookingsCount": "📤 मेरी बुकिंग्स",
+
+    "incomingJobsCount": "📥 आने वाले कार्य",
+
+    "userRole": "उपयोगकर्ता",
+
+    "workerRole": "कामगार"
   },
 
   "booking": {
@@ -305,7 +368,54 @@
 
     "paymentSuccess": "भुगतान सफल हुआ",
 
-    "paymentFailed": "भुगतान असफल हुआ"
+    "paymentFailed": "भुगतान असफल हुआ",
+
+    "submitting": "जमा हो रहा है...",
+
+    "rejectedBanner": "❌ बुकिंग अस्वीकृत कर दी गई",
+
+    "paymentCompletedBanner": "✅ भुगतान पूर्ण हुआ",
+
+    "bookingActiveBanner": "✅ बुकिंग सक्रिय है",
+
+    "serviceCompletedBanner": "✅ सेवा सफलतापूर्वक पूर्ण हुई",
+
+    "reviewAlreadyBanner": "⭐ समीक्षा पहले ही जमा की जा चुकी है",
+
+    "giveReviewBtn": "⭐ समीक्षा दें",
+
+    "incomingJobChip": "📥 आने वाला कार्य",
+
+    "myBookingChip": "📤 मेरी बुकिंग",
+
+    "ratingLabel": "रेटिंग",
+
+    "markedComplete": "बुकिंग पूर्ण के रूप में चिह्नित हुई",
+
+    "completeFailed": "बुकिंग पूर्ण नहीं हो पाई",
+
+    "pleaseWriteReview": "कृपया समीक्षा लिखें",
+
+    "submitReviewFailed": "समीक्षा जमा नहीं हो पाई",
+
+    "awaitingWorker": "कामगार के निर्णय का इंतज़ार",
+
+    "paidAwaitingWorker": "भुगतान पूर्ण हुआ — कामगार की स्वीकृति का इंतज़ार",
+
+    "acceptedAwaitingPayment": "कामगार ने स्वीकार किया — कृपया भुगतान पूर्ण करें",
+
+    "serviceInProgress": "सेवा प्रगति पर है — काम पूरा होने पर पूर्ण के रूप में चिह्नित करें",
+
+    "paymentFailedBanner": "भुगतान विफल — कृपया फिर से प्रयास करें",
+
+    "refundPending": "आपका भुगतान शीघ्र ही वापस कर दिया जाएगा।"
+  },
+
+  "filter": {
+    "topRated": "शीर्ष रेटेड",
+    "nearest": "निकटतम",
+    "lowestWage": "सबसे कम मजदूरी",
+    "sortBy": "क्रमबद्ध करें"
   },
 
   "footer": {
@@ -313,7 +423,31 @@
 
     "links": "त्वरित लिंक",
 
-    "contact": "संपर्क"
+    "contact": "संपर्क",
+
+    "reach": "हमसे जुड़ें",
+
+    "rights": "सर्वाधिकार सुरक्षित",
+
+    "linkedin": "लिंक्डइन प्रोफ़ाइल",
+
+    "github": "गिटहब प्रोजेक्ट्स"
+  },
+
+  "contact": {
+    "title": "संपर्क करें",
+    "phone": "+91 89895 13929",
+    "email": "support@grammitra.com",
+    "desc": "किसी भी प्रश्न या सहायता के लिए हमसे संपर्क करें।"
+  },
+
+  "jobs": {
+    "title": "आपके कार्य",
+    "subtitle": "अपने कार्य और बुकिंग्स ट्रैक करें",
+    "empty": "अभी कोई कार्य उपलब्ध नहीं है",
+    "noJobs": "अभी कोई कार्य नहीं",
+    "job": "कार्य",
+    "status": "स्थिति"
   },
 
   "about": {
@@ -408,7 +542,29 @@
 
     "error": "कुछ गलत हो गया",
 
-    "noResponse": "कोई जवाब नहीं मिला"
+    "noResponse": "कोई जवाब नहीं मिला",
+
+    "welcome": "नमस्ते! कामगार खोजने, अपनी बुकिंग देखने या प्रोफ़ाइल अपडेट करने के लिए पूछिए।",
+
+    "typing": "टाइप कर रहे हैं...",
+
+    "bookingStatus": "बुकिंग की स्थिति",
+
+    "open": "चैट खोलें",
+
+    "close": "चैट बंद करें",
+
+    "cta": {
+      "takeMe": "वहाँ ले जाओ",
+      "viewAll": "सभी कामगार देखें",
+      "viewWorker": "कामगार देखें",
+      "editProfile": "प्रोफ़ाइल बदलें",
+      "viewProfile": "प्रोफ़ाइल देखें",
+      "openDashboard": "डैशबोर्ड खोलें",
+      "openServices": "सेवाएँ देखें",
+      "openAbout": "हमारे बारे में",
+      "openContact": "संपर्क करें"
+    }
   },
 
   "serviceSubtitles": {

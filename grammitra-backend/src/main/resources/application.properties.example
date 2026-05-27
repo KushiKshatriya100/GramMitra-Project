@@ -1,0 +1,39 @@
+# =============================================================
+# application.properties.example
+#
+# Copy to `application.properties` for local dev, OR (preferred)
+# leave application.properties as the env-var template that ships
+# in the repo and provide values via the environment.
+#
+# DO NOT commit a copy with real values to git.
+# =============================================================
+
+spring.application.name=grammitra-backend
+
+# ---- MongoDB --------------------------------------------------
+# Local:   mongodb://localhost:27017/grammitra
+# Atlas:   mongodb+srv://<user>:<pass>@<cluster>.mongodb.net/grammitra
+MONGODB_URI=mongodb://localhost:27017/grammitra
+MONGODB_DB=grammitra
+
+# ---- JWT ------------------------------------------------------
+# Generate with: `openssl rand -base64 48`
+# MUST be at least 32 bytes (256 bits). Anything shorter is rejected at boot.
+JWT_SECRET=replace-with-output-of-openssl-rand-base64-48
+JWT_EXPIRATION_MS=86400000
+
+# ---- Twilio (SMS / OTP) --------------------------------------
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_PHONE_NUMBER=+1XXXXXXXXXX
+
+# ---- Razorpay (Payments) -------------------------------------
+RAZORPAY_KEY=rzp_test_xxxxxxxxxxxxxxxx
+RAZORPAY_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# ---- Google Gemini (Chatbot) ---------------------------------
+GEMINI_API_KEY=AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+GEMINI_API_URL=https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent
+
+# ---- Server ---------------------------------------------------
+PORT=8080

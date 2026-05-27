@@ -17,13 +17,29 @@
     "subtitle": "Find trusted workers near you — simple, fast, reliable",
     "search": "Search",
     "placeholder": "Search electricians, plumbers...",
-    "trust": "Reliable local workers • Verified services"
+    "trust": "Reliable local workers • Verified services",
+    "noMatch": "No services match \"{{query}}\".",
+    "noMatchHint": "Try \"AC\", \"plumber\", \"cleaning\", or \"tutor\"."
   },
 
   "services": {
     "title": "Popular Services",
     "explore": "Explore →",
-    "noWorkers": "No workers found"
+    "noWorkers": "No workers found",
+    "subtitle": "Trusted professionals ready to help you",
+    "findTrusted": "Find trusted and verified local workers near you for {{skill}} services.",
+    "noWorkersNear": "We could not find workers for {{skill}} services near your location right now.",
+    "availableWorkers": "Available Workers",
+    "verifiedProfiles": "Verified Profiles",
+    "activeResults": "{{count}} Active Results",
+    "exploreOther": "Explore Other Services",
+    "resultsCount": "{{count}} Workers Available",
+    "trustedLocal": "Trusted Local Services",
+    "skilledNearby": "Skilled workers available near your location",
+    "tryNearbyOrOther": "Try searching nearby areas or explore similar services available on GramMitra.",
+    "searchFailed": "Could not load workers right now. Please try again.",
+    "forbidden": "This service is currently unavailable. Please try again shortly.",
+    "networkError": "Check your internet connection and try again."
   },
 
   "worker": {
@@ -66,7 +82,29 @@
 
     "perDay": "/day",
 
-    "localWorker": "Local Worker"
+    "localWorker": "Local Worker",
+    "aboutWorker": "About Worker",
+    "contactNumber": "Contact Number",
+    "notAvailable": "Not Available",
+    "completedJobs": "Completed Jobs",
+    "browseServices": "Browse Services",
+    "yearsExperienceLabel": "Years Experience",
+    "currentStatus": "Current Status",
+    "totalReviewsLabel": "Total Reviews",
+    "customerRatings": "Customer Ratings",
+    "verifiedFeedback": "Real feedback from verified customers",
+    "defaultBio": "Experienced professional specializing in {{skill}} services with trusted local expertise.",
+    "notFoundMessage": "Worker profile could not be found.",
+    "customer": "Customer",
+    "verifiedBooking": "Verified Booking",
+    "expLabel": "Exp.",
+    "yearsShort": "+ Yrs",
+    "wageLabel": "Wage",
+    "defaultDescription": "Expert in {{skill}} providing high-quality service.",
+    "locating": "Locating…",
+    "viewOnMap": "View on map",
+    "callWorker": "Call",
+    "phoneHidden": "Hidden until booking"
   },
 
   "common": {
@@ -116,7 +154,17 @@
 
     "invalidSession": "Invalid session. Please try again.",
 
-    "phoneRequired": "Phone number is required"
+    "phoneRequired": "Phone number is required",
+    "copied": "Login ID copied",
+    "copyFailed": "Failed to copy",
+    "invalidResponse": "Invalid response from server",
+    "signUpInstead": "Sign up instead",
+    "otpSentTo": "OTP sent to",
+    "registrationSuccess": "Registration Successful",
+    "saveLIdWarning": "Please save your Login ID carefully.",
+    "yourLoginIdLabel": "Your Login ID",
+    "copyId": "Copy Login ID",
+    "continue": "Continue"
   },
 
   "profile": {
@@ -183,7 +231,11 @@
 
     "locationCaptured": "Location captured",
     "locationFailed": "Failed to get location",
-    "locationUnsupported": "Location not supported"
+    "locationUnsupported": "Location not supported",
+
+    "useMyLocation": "📍 Use my location",
+
+    "gettingLocation": "Getting..."
   },
 
   "dashboard": {
@@ -207,7 +259,19 @@
 
     "myBookings": "My Bookings",
 
-    "incomingJobs": "Incoming Jobs"
+    "incomingJobs": "Incoming Jobs",
+
+    "noBookingsFound": "No Bookings Found",
+
+    "reviewPendingBody": "You have {{count}} completed booking(s) waiting for review.",
+
+    "myBookingsCount": "📤 My Bookings",
+
+    "incomingJobsCount": "📥 Incoming Jobs",
+
+    "userRole": "User",
+
+    "workerRole": "Worker"
   },
 
   "booking": {
@@ -258,7 +322,54 @@
 
     "paymentSuccess": "Payment successful",
 
-    "paymentFailed": "Payment failed"
+    "paymentFailed": "Payment failed",
+
+    "submitting": "Submitting...",
+
+    "rejectedBanner": "❌ Booking was rejected",
+
+    "paymentCompletedBanner": "✅ Payment completed",
+
+    "bookingActiveBanner": "✅ Booking is active",
+
+    "serviceCompletedBanner": "✅ Service completed successfully",
+
+    "reviewAlreadyBanner": "⭐ Review already submitted",
+
+    "giveReviewBtn": "⭐ Give Review",
+
+    "incomingJobChip": "📥 Incoming Job",
+
+    "myBookingChip": "📤 My Booking",
+
+    "ratingLabel": "Rating",
+
+    "markedComplete": "Booking marked as completed",
+
+    "completeFailed": "Failed to complete booking",
+
+    "pleaseWriteReview": "Please write a review",
+
+    "submitReviewFailed": "Failed to submit review",
+
+    "awaitingWorker": "Awaiting worker decision",
+
+    "paidAwaitingWorker": "Paid — waiting for the worker to accept",
+
+    "acceptedAwaitingPayment": "Worker accepted — please complete payment to confirm",
+
+    "serviceInProgress": "Service in progress — mark completed when the worker is done",
+
+    "paymentFailedBanner": "Payment failed — please try again",
+
+    "refundPending": "Your payment will be refunded shortly."
+  },
+
+  "filter": {
+    "topRated": "Top Rated",
+    "nearest": "Nearest",
+    "lowestWage": "Lowest Wage",
+    "sortBy": "Sort by"
   },
 
   "footer": {
@@ -266,7 +377,31 @@
 
     "links": "Quick Links",
 
-    "contact": "Contact"
+    "contact": "Contact",
+
+    "reach": "Reach Out",
+
+    "rights": "All rights reserved",
+
+    "linkedin": "LinkedIn Profile",
+
+    "github": "GitHub Projects"
+  },
+
+  "contact": {
+    "title": "Contact Us",
+    "phone": "+91 89895 13929",
+    "email": "support@grammitra.com",
+    "desc": "Get in touch with us for any questions or support."
+  },
+
+  "jobs": {
+    "title": "Your Jobs",
+    "subtitle": "Track your jobs and bookings",
+    "empty": "No jobs available right now",
+    "noJobs": "No jobs yet",
+    "job": "Job",
+    "status": "Status"
   },
 
   "about": {
@@ -361,7 +496,29 @@
 
     "error": "Something went wrong",
 
-    "noResponse": "No response"
+    "noResponse": "No response",
+
+    "welcome": "Hi! Ask me to find a worker, check your bookings, or update your profile.",
+
+    "typing": "Typing...",
+
+    "bookingStatus": "Booking Status",
+
+    "open": "Open chat",
+
+    "close": "Close chat",
+
+    "cta": {
+      "takeMe": "Take me there",
+      "viewAll": "View all workers",
+      "viewWorker": "View worker",
+      "editProfile": "Edit profile",
+      "viewProfile": "View profile",
+      "openDashboard": "Open dashboard",
+      "openServices": "Open services",
+      "openAbout": "Open About",
+      "openContact": "Open Contact"
+    }
   },
 
   "serviceSubtitles": {

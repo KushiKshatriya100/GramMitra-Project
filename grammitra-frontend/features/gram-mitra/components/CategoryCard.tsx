@@ -17,11 +17,11 @@ export default function CategoryCard({
     <Card
       onClick={onClick}
       className="w-[150px] h-[150px] flex flex-col items-center justify-center
-      text-center gap-3 rounded-2xl border border-[var(--border)] bg-white/90
-      hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
+      text-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)]/95
+      hover:shadow-[var(--shadow-medium)] hover:-translate-y-1 transition-all duration-300 group cursor-pointer"
     >
       <div className="w-14 h-14 flex items-center justify-center rounded-full
-      bg-[var(--border)] text-2xl shadow-sm group-hover:scale-110 transition">
+      bg-[var(--bg)] text-2xl shadow-[var(--shadow-soft)] group-hover:scale-110 transition">
         {icon}
       </div>
 

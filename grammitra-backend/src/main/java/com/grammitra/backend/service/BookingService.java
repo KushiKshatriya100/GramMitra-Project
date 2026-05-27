@@ -11,7 +11,12 @@ import com.grammitra.backend.repository.JobRepository;
 import com.grammitra.backend.repository.UserRepository;
 import com.grammitra.backend.repository.WorkerRepository;
 
+import com.razorpay.RazorpayException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -20,6 +25,8 @@ import java.util.Map;
 
 @Service
 public class BookingService {
+
+    private static final Logger log = LoggerFactory.getLogger(BookingService.class);
 
     private final BookingRepository bookingRepository;
 
@@ -161,15 +168,19 @@ public class BookingService {
         return savedBooking;
     }
 
-    // ✅ CREATE ORDER
+    // ✅ CREATE ORDER — only the booking's customer may pay for it.
     public Map<String, Object> createOrder(
-            String bookingId
+            String bookingId,
+            String callerLoginId
     ) {
 
+        if (callerLoginId == null || callerLoginId.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED, "Authentication required");
+        }
+
         System.out.println(
-                "🔥 Creating order for booking: "
-                        + bookingId
-        );
+                "🔥 Creating order for booking: " + bookingId);
 
         Booking booking = bookingRepository
                 .findById(bookingId)
@@ -177,18 +188,25 @@ public class BookingService {
                         new RuntimeException("Booking not found")
                 );
 
-        if (booking.getOrderId() != null) {
+        // 🔐 CALLER-IDENTITY CHECK — must be the booking's customer
+        if (!callerLoginId.equals(booking.getUserId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Only the booking's customer can pay for it");
+        }
 
+        if (booking.getOrderId() != null) {
             throw new RuntimeException(
                     "Order already created for this booking"
             );
         }
 
+        // booking.amount is a primitive double — defaults to 0.0 when the
+        // worker's wage was never set. The <=0 check catches that case
+        // with a message that points at the most likely root cause.
         if (booking.getAmount() <= 0) {
-
             throw new RuntimeException(
-                    "Invalid booking amount"
-            );
+                    "Invalid booking amount — worker wage not set?");
         }
 
         Map<String, Object> orderData =
@@ -271,11 +289,14 @@ public class BookingService {
         }
 
         // ✅ SUCCESS
+        // IMPORTANT: only paymentStatus is touched here. The booking's main
+        // `status` field tracks the WORKER'S decision (PENDING → ACCEPTED /
+        // REJECTED → COMPLETED) and must not be overwritten by payment.
+        // Overwriting it previously made the Accept / Reject buttons vanish
+        // for workers the moment the user paid.
         booking.setPaymentId(paymentId);
 
         booking.setPaymentStatus("PAID");
-
-        booking.setStatus("PAID");
 
         booking.setUpdatedAt(LocalDateTime.now());
 
@@ -289,7 +310,7 @@ public class BookingService {
             );
 
             User user =
-                    userRepository.findById(
+                    userRepository.findByLoginId(
                             booking.getUserId()
                     ).orElse(null);
 
@@ -336,10 +357,23 @@ public class BookingService {
     }
 
     // ✅ STATUS UPDATE
+    // Enforces both a tight state machine AND caller-identity checks so:
+    //   - The state can't go out of order (e.g. complete-before-pay)
+    //   - Only the booking's actual worker can accept / reject
+    //   - Only the booking's actual customer can mark completed
+    //
+    // Before this guard, any logged-in user could pass any bookingId and
+    // mutate it (C-3 in the production review).
     public Booking updateStatus(
             String bookingId,
-            String status
+            String status,
+            String callerLoginId
     ) {
+
+        if (callerLoginId == null || callerLoginId.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED, "Authentication required");
+        }
 
         Booking booking =
                 bookingRepository.findById(bookingId)
@@ -347,50 +381,116 @@ public class BookingService {
                                 new RuntimeException("Booking not found")
                         );
 
-        booking.setStatus(status);
+        // 🔐 CALLER-IDENTITY CHECK
+        // ACCEPTED / REJECTED: caller must be the worker assigned to this
+        // booking. booking.workerId is the Worker document _id; we look up
+        // that Worker and compare its userId (= loginId / JWT subject).
+        // COMPLETED: caller must be the booking's customer (booking.userId).
+        switch (status) {
+            case "ACCEPTED", "REJECTED" -> {
+                Worker assigned = workerRepository.findById(booking.getWorkerId())
+                        .orElseThrow(() -> new RuntimeException(
+                                "Worker not found for booking"));
+                if (!callerLoginId.equals(assigned.getUserId())) {
+                    throw new ResponseStatusException(
+                            HttpStatus.FORBIDDEN,
+                            "Only the assigned worker can " + status.toLowerCase()
+                                    + " this booking");
+                }
+            }
+            case "COMPLETED" -> {
+                if (!callerLoginId.equals(booking.getUserId())) {
+                    throw new ResponseStatusException(
+                            HttpStatus.FORBIDDEN,
+                            "Only the booking's customer can mark it completed");
+                }
+            }
+            default -> throw new RuntimeException(
+                    "Unsupported booking status: " + status);
+        }
 
+        String current = booking.getStatus() == null
+                ? "PENDING"
+                : booking.getStatus();
+
+        switch (status) {
+            case "ACCEPTED", "REJECTED" -> {
+                if (!"PENDING".equals(current)) {
+                    throw new RuntimeException(
+                            "Cannot " + status.toLowerCase()
+                                    + " a booking that is " + current);
+                }
+            }
+            case "COMPLETED" -> {
+                if (!"ACCEPTED".equals(current)) {
+                    throw new RuntimeException(
+                            "Booking must be ACCEPTED before it can be marked completed");
+                }
+                if (!"PAID".equals(booking.getPaymentStatus())) {
+                    throw new RuntimeException(
+                            "Booking can only be completed after payment is done");
+                }
+            }
+            default -> throw new RuntimeException(
+                    "Unsupported booking status: " + status);
+        }
+
+        booking.setStatus(status);
         booking.setUpdatedAt(LocalDateTime.now());
+
+        // 💸 REFUND ON REJECT (C-7)
+        // If the worker rejects a booking the customer has already paid
+        // for, issue a Razorpay refund inline. The UI already promises
+        // "your payment will be refunded shortly" — this is where that
+        // promise is actually kept.
+        //
+        // Behaviour:
+        //   - PAID  → call Razorpay; on success set REFUNDED + refundId,
+        //             on failure set REFUND_FAILED so it shows up in a
+        //             dashboard / reconciliation report and a human can
+        //             retry. Either way the reject succeeds (we don't
+        //             want the worker stuck if Razorpay hiccups; the
+        //             customer's money is still in Razorpay's escrow
+        //             and visible to ops).
+        //   - any other paymentStatus → no money to return, no-op.
+        if ("REJECTED".equals(status) && "PAID".equals(booking.getPaymentStatus())) {
+            try {
+                String refundId = paymentService.refundPayment(
+                        booking.getPaymentId(), booking.getAmount());
+                booking.setRefundId(refundId);
+                booking.setPaymentStatus("REFUNDED");
+                log.info("💸 Refund OK for booking={} refundId={}", booking.getId(), refundId);
+            } catch (RazorpayException | RuntimeException ex) {
+                booking.setPaymentStatus("REFUND_FAILED");
+                log.error("❌ Refund FAILED for booking={} paymentId={} amount={} — manual reconciliation required: {}",
+                        booking.getId(), booking.getPaymentId(),
+                        booking.getAmount(), ex.getMessage());
+            }
+        }
 
         // ✅ MARK COMPLETED
         if ("COMPLETED".equals(status)) {
 
             booking.setCompleted(true);
-
-            booking.setCompletedAt(
-                    LocalDateTime.now()
-            );
+            booking.setCompletedAt(LocalDateTime.now());
 
             // ✅ UPDATE JOB STATUS
             if (booking.getJobId() != null) {
-
-                jobRepository.findById(
-                        booking.getJobId()
-                ).ifPresent(job -> {
-
-                    job.setStatus(
-                            JobStatus.COMPLETED
-                    );
-
-                    job.setUpdatedAt(
-                            new Date()
-                    );
-
-                    jobRepository.save(job);
-                });
+                jobRepository.findById(booking.getJobId())
+                        .ifPresent(job -> {
+                            job.setStatus(JobStatus.COMPLETED);
+                            job.setUpdatedAt(new Date());
+                            jobRepository.save(job);
+                        });
             }
         }
 
-        Booking updatedBooking =
-                bookingRepository.save(booking);
+        Booking updatedBooking = bookingRepository.save(booking);
 
         // ✅ ACCEPT NOTIFICATION
         if ("ACCEPTED".equals(status)) {
-
-            userRepository.findById(
-                    booking.getUserId()
-            ).ifPresent(
-                    notificationService::sendBookingAccepted
-            );
+            userRepository.findByLoginId(booking.getUserId())
+                    .ifPresent(notificationService::sendBookingAccepted);
         }
 
         return updatedBooking;

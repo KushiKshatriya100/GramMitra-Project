@@ -54,7 +54,7 @@ export default function ServicesPage() {
                           .replace(/\s+/g, "-")}`
                       )
                     }
-                    className="bg-white p-6 rounded-xl shadow hover:shadow-md hover:scale-105 transition cursor-pointer text-center"
+                    className="bg-[var(--card)] border border-[var(--border)] text-[var(--text)] p-6 rounded-xl shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-medium)] hover:scale-105 transition cursor-pointer text-center"
                   >
                     <div className="text-3xl mb-3">{icon}</div>
 

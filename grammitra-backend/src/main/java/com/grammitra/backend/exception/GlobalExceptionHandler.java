@@ -1,15 +1,35 @@
 package com.grammitra.backend.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    // 🔐 ResponseStatusException must be handled BEFORE the generic
+    // RuntimeException advice below, otherwise services that throw 403 /
+    // 401 get silently downgraded to 400 BUSINESS_ERROR. The auth checks
+    // in BookingService rely on this preserving the original status code.
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleResponseStatus(ResponseStatusException ex) {
+
+        HttpStatusCode status = ex.getStatusCode();
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", status.value());
+        body.put("type", status.value() == 403 ? "FORBIDDEN"
+                : status.value() == 401 ? "UNAUTHORIZED"
+                : "ERROR");
+        body.put("error", ex.getReason() != null ? ex.getReason() : "Request rejected");
+
+        return ResponseEntity.status(status).body(body);
+    }
 
     // 🔴 Validation errors
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -347,7 +347,7 @@ export default function BookingCard({
         );
 
         toast.success(
-          "Booking marked as completed"
+          translate("booking.markedComplete", "Booking marked as completed")
         );
 
         onAction();
@@ -355,7 +355,7 @@ export default function BookingCard({
       } catch {
 
         toast.error(
-          "Failed to complete booking"
+          translate("booking.completeFailed", "Failed to complete booking")
         );
 
       } finally {
@@ -374,7 +374,7 @@ export default function BookingCard({
       if (!comment.trim()) {
 
         toast.error(
-          "Please write review"
+          translate("booking.pleaseWriteReview", "Please write a review")
         );
 
         return;
@@ -391,7 +391,7 @@ export default function BookingCard({
         );
 
         toast.success(
-          "Review submitted successfully"
+          translate("booking.reviewSuccess", "Review submitted successfully")
         );
 
         setShowReviewBox(false);
@@ -404,7 +404,7 @@ export default function BookingCard({
 
         toast.error(
           error?.message ||
-            "Failed to submit review"
+            translate("booking.submitReviewFailed", "Failed to submit review")
         );
 
       } finally {
@@ -413,32 +413,32 @@ export default function BookingCard({
       }
     };
 
-  // 🎨 STATUS COLORS
+  // 🎨 STATUS COLORS — theme-aware
   const statusStyles =
     booking.status ===
     "PENDING"
-      ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+      ? "bg-[var(--warning-soft)] text-[var(--warning)] border-[var(--warning)]/30"
       : booking.status ===
         "PAID"
-      ? "bg-blue-50 text-blue-700 border-blue-200"
+      ? "bg-[var(--info-soft)] text-[var(--info)] border-[var(--info)]/30"
       : booking.status ===
         "ACCEPTED"
-      ? "bg-green-50 text-green-700 border-green-200"
+      ? "bg-[var(--success-soft)] text-[var(--success)] border-[var(--success)]/30"
       : booking.status ===
         "COMPLETED"
-      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-      : "bg-red-50 text-red-700 border-red-200";
+      ? "bg-[var(--success-soft)] text-[var(--success)] border-[var(--success)]/30"
+      : "bg-[var(--danger-soft)] text-[var(--danger)] border-[var(--danger)]/30";
 
   return (
     <div
       className="
       rounded-3xl
       border border-[var(--border)]
-      bg-white
+      bg-[var(--card)]
       p-6
-      shadow-sm
+      shadow-[var(--shadow-soft)]
       transition-all duration-300
-      hover:shadow-lg
+      hover:shadow-[var(--shadow-medium)]
       "
     >
 
@@ -452,8 +452,8 @@ export default function BookingCard({
           <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[var(--bg)] px-3 py-1 text-xs font-medium text-[var(--text-soft)]">
 
             {role === "worker"
-              ? "📥 Incoming Job"
-              : "📤 My Booking"}
+              ? translate("booking.incomingJobChip", "📥 Incoming Job")
+              : translate("booking.myBookingChip", "📤 My Booking")}
           </div>
 
           {/* DESCRIPTION */}
@@ -491,7 +491,7 @@ export default function BookingCard({
 
             {/* PAYMENT */}
             {booking.paymentStatus && (
-              <div className="rounded-full bg-gray-50 px-3 py-1 text-xs font-medium text-gray-600">
+              <div className="rounded-full bg-[var(--bg)] border border-[var(--border)] px-3 py-1 text-xs font-medium text-[var(--text-soft)]">
 
                 💳 {booking.paymentStatus}
               </div>
@@ -500,7 +500,7 @@ export default function BookingCard({
             {/* AMOUNT */}
             {booking.amount !==
               undefined && (
-              <div className="rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-[#A35231]">
+              <div className="rounded-full bg-[var(--primary-soft)] px-3 py-1 text-xs font-semibold text-[var(--primary)]">
 
                 ₹ {booking.amount}
               </div>
@@ -510,49 +510,112 @@ export default function BookingCard({
       </div>
 
       {/* ACTIONS */}
-      <div className="mt-6">
+      {/*
+        The action visibility logic is driven by the TUPLE
+        (booking.status, booking.paymentStatus), because they're independent:
 
-        {/* 💳 USER PAYMENT */}
-        {role === "user" &&
-          booking.status ===
-            "PENDING" && (
-            <button
-              onClick={
-                handlePayment
-              }
-              disabled={loading}
-              className="
-                h-11 rounded-xl
-                bg-[var(--primary)]
-                px-5 text-sm font-semibold
-                text-white transition
-                hover:opacity-90
-                disabled:opacity-50
-              "
-            >
-              {loading
-                ? translate(
-                    "common.loading",
-                    "Loading..."
-                  )
-                : translate(
-                    "payment.payNow",
-                    "Pay Now"
-                  )}
-            </button>
-          )}
+          status:        PENDING → ACCEPTED / REJECTED → COMPLETED
+          paymentStatus: PENDING → PAID / FAILED
 
-        {/* 👷 WORKER ACTIONS */}
-        {role === "worker" &&
-          booking.status ===
-            "PENDING" && (
-            <div className="flex flex-wrap gap-3">
+        Buttons:
+          Worker Accept/Reject  →  status === "PENDING"
+          User Pay              →  paymentStatus !== "PAID" && status !== "REJECTED"
+          User Mark Completed   →  status === "ACCEPTED" && paymentStatus === "PAID"
+          User Give Review      →  status === "COMPLETED" && !reviewSubmitted
+      */}
+      {(() => {
+        const isPaid = booking.paymentStatus === "PAID";
+        const isPaymentFailed = booking.paymentStatus === "FAILED";
 
-              {/* ACCEPT */}
+        const canPay =
+          role === "user" &&
+          !isPaid &&
+          booking.status !== "REJECTED" &&
+          booking.status !== "COMPLETED";
+
+        const canAcceptReject =
+          role === "worker" && booking.status === "PENDING";
+
+        const canMarkComplete =
+          role === "user" &&
+          booking.status === "ACCEPTED" &&
+          isPaid;
+
+        return (
+          <div className="mt-6 space-y-4">
+
+            {/* ─── WORKER: Accept / Reject ─── */}
+            {canAcceptReject && (
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={handleAccept}
+                  disabled={loading}
+                  className="
+                    h-11 rounded-xl
+                    bg-[var(--primary)]
+                    px-5 text-sm font-semibold
+                    text-white transition
+                    hover:opacity-90
+                    disabled:opacity-50
+                  "
+                >
+                  {loading
+                    ? translate("common.loading", "Loading...")
+                    : translate("booking.accept", "Accept")}
+                </button>
+
+                <button
+                  onClick={handleReject}
+                  disabled={loading}
+                  className="
+                    h-11 rounded-xl
+                    bg-[var(--danger)] px-5
+                    text-sm font-semibold
+                    text-white transition
+                    hover:opacity-90
+                    disabled:opacity-50
+                  "
+                >
+                  {translate("booking.reject", "Reject")}
+                </button>
+              </div>
+            )}
+
+            {/* ─── COMBINED-STATE BANNERS ─── */}
+            {booking.status === "PENDING" && !isPaid && role === "user" && (
+              <div className="rounded-2xl bg-[var(--warning-soft)] px-4 py-3 text-sm font-medium text-[var(--warning)] border border-[var(--warning)]/30">
+                {translate("booking.awaitingWorker", "Awaiting worker decision")}
+              </div>
+            )}
+
+            {booking.status === "PENDING" && isPaid && (
+              <div className="rounded-2xl bg-[var(--info-soft)] px-4 py-3 text-sm font-medium text-[var(--info)] border border-[var(--info)]/20">
+                {translate("booking.paidAwaitingWorker", "Paid — waiting for the worker to accept")}
+              </div>
+            )}
+
+            {booking.status === "ACCEPTED" && !isPaid && (
+              <div className="rounded-2xl bg-[var(--info-soft)] px-4 py-3 text-sm font-medium text-[var(--info)] border border-[var(--info)]/20">
+                {translate("booking.acceptedAwaitingPayment", "Worker accepted — please complete payment to confirm")}
+              </div>
+            )}
+
+            {booking.status === "ACCEPTED" && isPaid && (
+              <div className="rounded-2xl bg-[var(--success-soft)] px-4 py-3 text-sm font-medium text-[var(--success)] border border-[var(--success)]/20">
+                {translate("booking.serviceInProgress", "Service in progress — mark completed when the worker is done")}
+              </div>
+            )}
+
+            {isPaymentFailed && (
+              <div className="rounded-2xl bg-[var(--danger-soft)] px-4 py-3 text-sm font-medium text-[var(--danger)] border border-[var(--danger)]/20">
+                {translate("booking.paymentFailedBanner", "Payment failed — please try again")}
+              </div>
+            )}
+
+            {/* ─── USER: Pay Now ─── */}
+            {canPay && (
               <button
-                onClick={
-                  handleAccept
-                }
+                onClick={handlePayment}
                 disabled={loading}
                 className="
                   h-11 rounded-xl
@@ -564,64 +627,19 @@ export default function BookingCard({
                 "
               >
                 {loading
-                  ? translate(
-                      "common.loading",
-                      "Loading..."
-                    )
-                  : translate(
-                      "booking.accept",
-                      "Accept"
-                    )}
+                  ? translate("common.loading", "Loading...")
+                  : translate("payment.payNow", "Pay Now")}
               </button>
+            )}
 
-              {/* REJECT */}
-              <button
-                onClick={
-                  handleReject
-                }
-                disabled={loading}
-                className="
-                  h-11 rounded-xl
-                  bg-red-500 px-5
-                  text-sm font-semibold
-                  text-white transition
-                  hover:opacity-90
-                  disabled:opacity-50
-                "
-              >
-                {translate(
-                  "booking.reject",
-                  "Reject"
-                )}
-              </button>
-            </div>
-          )}
-
-        {/* ✅ PAID */}
-        {booking.status === "PAID" && (
-          <div className="rounded-2xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700 border border-green-100">
-
-            ✅ Payment completed
-          </div>
-        )}
-
-        {/* ✅ ACCEPTED */}
-        {booking.status === "ACCEPTED" && (
-          <div className="space-y-4">
-
-            <div className="rounded-2xl bg-green-50 px-4 py-3 text-sm font-medium text-green-700 border border-green-100">
-
-              ✅ Booking is active
-            </div>
-
-            {/* ✅ USER CAN COMPLETE */}
-            {role === "user" && (
+            {/* ─── USER: Mark Completed ─── */}
+            {canMarkComplete && (
               <button
                 onClick={handleComplete}
                 disabled={loading}
                 className="
                   h-11 rounded-xl
-                  bg-emerald-600
+                  bg-[var(--success)]
                   px-5 text-sm font-semibold
                   text-white transition
                   hover:opacity-90
@@ -629,21 +647,24 @@ export default function BookingCard({
                 "
               >
                 {loading
-                  ? "Loading..."
-                  : "Mark Completed"}
+                  ? translate("common.loading", "Loading...")
+                  : translate("booking.complete", "Mark Completed")}
               </button>
             )}
           </div>
-        )}
+        );
+      })()}
+
+      <div className="mt-6">
 
         {/* ⭐ COMPLETED */}
         {booking.status ===
           "COMPLETED" && (
           <div className="space-y-4">
 
-            <div className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 border border-emerald-100">
+            <div className="rounded-2xl bg-[var(--success-soft)] px-4 py-3 text-sm font-medium text-[var(--success)] border border-[var(--success)]/20">
 
-              ✅ Service completed successfully
+              {translate("booking.serviceCompletedBanner", "✅ Service completed successfully")}
             </div>
 
             {/* REVIEW BUTTON */}
@@ -662,7 +683,7 @@ export default function BookingCard({
                   hover:opacity-90
                 "
               >
-                ⭐ Give Review
+                {translate("booking.giveReviewBtn", "⭐ Give Review")}
               </button>
             )}
 
@@ -675,7 +696,7 @@ export default function BookingCard({
 
                   <p className="mb-2 text-sm font-medium text-[var(--text)]">
 
-                    Rating
+                    {translate("booking.ratingLabel", "Rating")}
                   </p>
 
                   <div className="flex gap-2">
@@ -692,8 +713,8 @@ export default function BookingCard({
                           className={`text-3xl transition ${
                             rating >=
                             star
-                              ? "text-yellow-400"
-                              : "text-gray-300"
+                              ? "text-[var(--warning)]"
+                              : "text-[var(--border)]"
                           }`}
                         >
                           ★
@@ -712,11 +733,16 @@ export default function BookingCard({
                     )
                   }
                   rows={4}
-                  placeholder="Write your experience..."
+                  placeholder={translate(
+                    "booking.reviewPlaceholder",
+                    "Write your experience..."
+                  )}
                   className="
                     w-full rounded-2xl
                     border border-[var(--border)]
-                    bg-white px-4 py-3
+                    bg-[var(--card)] text-[var(--text)]
+                    placeholder:text-[var(--text-muted)]
+                    px-4 py-3
                     text-sm outline-none
                     focus:border-[var(--primary)]
                   "
@@ -738,28 +764,34 @@ export default function BookingCard({
                   "
                 >
                   {loading
-                    ? "Submitting..."
-                    : "Submit Review"}
+                    ? translate("booking.submitting", "Submitting...")
+                    : translate("booking.submitReview", "Submit Review")}
                 </button>
               </div>
             )}
 
             {/* REVIEW ALREADY SUBMITTED */}
             {booking.reviewSubmitted && (
-              <div className="rounded-2xl bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700 border border-blue-100">
+              <div className="rounded-2xl bg-[var(--info-soft)] px-4 py-3 text-sm font-medium text-[var(--info)] border border-[var(--info)]/20">
 
-                ⭐ Review already submitted
+                {translate("booking.reviewAlreadyBanner", "⭐ Review already submitted")}
               </div>
             )}
           </div>
         )}
 
         {/* ❌ REJECTED */}
-        {booking.status ===
-          "REJECTED" && (
-          <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 border border-red-100">
-
-            ❌ Booking was rejected
+        {booking.status === "REJECTED" && (
+          <div className="rounded-2xl bg-[var(--danger-soft)] px-4 py-3 text-sm font-medium text-[var(--danger)] border border-[var(--danger)]/20">
+            {translate("booking.rejectedBanner", "❌ Booking was rejected")}
+            {booking.paymentStatus === "PAID" && (
+              <div className="mt-1 text-xs font-normal text-[var(--text-soft)]">
+                {translate(
+                  "booking.refundPending",
+                  "Your payment will be refunded shortly."
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

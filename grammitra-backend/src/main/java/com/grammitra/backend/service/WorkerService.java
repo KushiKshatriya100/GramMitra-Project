@@ -42,7 +42,11 @@ public class WorkerService {
         worker.setUserId(userId);
 
         // ✅ AUTO SYNC USER DATA
-        userRepository.findById(userId)
+        // NOTE: `userId` here is the JWT subject = loginId, NOT the User's
+        // Mongo _id. `findById` would do the wrong lookup and silently
+        // return empty, leaving name/phone null on the Worker. Use
+        // findByLoginId so the registration data actually copies over.
+        userRepository.findByLoginId(userId)
                 .ifPresent(user -> {
 
                     // ✅ REGISTRATION NAME
@@ -240,14 +244,16 @@ public class WorkerService {
                         return false;
                     }
 
-                    String normalizedSkill =
-                            normalizeSkill(skill);
+                    // EXACT MATCH (after normalize). Substring matching
+                    // caused unrelated skills to leak through — e.g. "tank"
+                    // matching "water tank cleaning". The frontend already
+                    // resolves colloquial terms (electrician → "electrical
+                    // wiring") to canonical SKILLS before calling, so the
+                    // backend only needs to compare exact normalized strings.
+                    String target = normalizeSkill(skill);
 
                     return w.getSkills().stream()
-                            .anyMatch(s ->
-                                    normalizeSkill(s)
-                                            .contains(normalizedSkill)
-                            );
+                            .anyMatch(s -> normalizeSkill(s).equals(target));
                 })
 
                 .filter(w -> {
@@ -302,47 +308,26 @@ public class WorkerService {
         return R * c;
     }
 
-    // ✅ SMART SKILL NORMALIZATION
+    // ✅ SKILL NORMALIZATION
+    // Lowercase, trim, collapse internal whitespace, hyphens → spaces.
+    // The synonym/colloquial resolution lives in the frontend
+    // (features/gram-mitra/utils/skillSearch.ts) so the user's query
+    // is always one of the canonical SKILLS values by the time it
+    // reaches the backend. Doing synonym remapping here too caused
+    // destructive transforms like "plumbing" → "plumber" while workers
+    // were stored with the canonical "plumbing" — producing empty
+    // results or false matches against the unrelated synonym key.
     private String normalizeSkill(String skill) {
 
         if (skill == null) {
             return "";
         }
 
-        String normalized =
-                skill.trim().toLowerCase();
-
-        Map<String, String> synonyms =
-                new HashMap<>();
-
-        // 🔌 ELECTRICIAN
-        synonyms.put("electric", "electrician");
-        synonyms.put("wiring", "electrician");
-        synonyms.put("bijli", "electrician");
-        synonyms.put("बिजली", "electrician");
-        synonyms.put("इलेक्ट्रीशियन", "electrician");
-
-        // 🚰 PLUMBER
-        synonyms.put("plumbing", "plumber");
-        synonyms.put("pipe", "plumber");
-        synonyms.put("pipe repair", "plumber");
-        synonyms.put("प्लंबर", "plumber");
-
-        // 🪚 CARPENTER
-        synonyms.put("carpentry", "carpenter");
-        synonyms.put("woodwork", "carpenter");
-        synonyms.put("बढ़ई", "carpenter");
-
-        // 🧹 HOUSEKEEPING
-        synonyms.put("maid", "housekeeping");
-        synonyms.put("cleaner", "housekeeping");
-        synonyms.put("कामवाली", "housekeeping");
-        synonyms.put("safai", "housekeeping");
-
-        return synonyms.getOrDefault(
-                normalized,
-                normalized
-        );
+        return skill
+                .trim()
+                .toLowerCase()
+                .replace('-', ' ')
+                .replaceAll("\\s+", " ");
     }
 
     private void calculateProfileCompletion(
@@ -565,16 +550,22 @@ public class WorkerService {
         res.setId(worker.getId());
 
         // ✅ FETCH USER DATA DIRECTLY
-        // ✅ FETCH USER DATA DIRECTLY
-        userRepository.findById(worker.getUserId())
-                .ifPresent(user -> {
-
-                    // ✅ ALWAYS LATEST USER NAME
-                    res.setName(user.getName());
-
-                    // ✅ ALWAYS LATEST PHONE
-                    res.setPhone(user.getPhone());
-                });
+        // worker.userId stores the JWT subject (= loginId), not the User's
+        // Mongo _id. Use findByLoginId so the registered name/phone actually
+        // flow into the response. Fall back to whatever's denormalized on
+        // the Worker document itself so a stale/orphaned profile still
+        // renders sensibly instead of a blank card.
+        userRepository.findByLoginId(worker.getUserId())
+                .ifPresentOrElse(
+                        user -> {
+                            res.setName(user.getName());
+                            res.setPhone(user.getPhone());
+                        },
+                        () -> {
+                            res.setName(worker.getName());
+                            res.setPhone(worker.getPhone());
+                        }
+                );
 
         res.setProfileImage(
                 worker.getProfileImage()

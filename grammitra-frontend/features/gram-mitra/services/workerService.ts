@@ -1,5 +1,6 @@
 import api from "@/lib/api";
 import { Worker } from "../types/Worker";
+import { workerHasSkill } from "../utils/skillSearch";
 
 const normalizeSkill = (
   skill: string
@@ -14,7 +15,8 @@ const normalizeSkill = (
 
 // 🔥 SEARCH WORKERS BY SKILL
 export const getWorkersBySkill = async (
-  skill: string
+  skill: string,
+  signal?: AbortSignal
 ): Promise<Worker[]> => {
 
   const cleanSkill =
@@ -30,6 +32,7 @@ export const getWorkersBySkill = async (
         params: {
           skill: cleanSkill,
         },
+        signal,
       }
     );
 
@@ -38,8 +41,16 @@ export const getWorkersBySkill = async (
         ? res.data
         : [];
 
+    // ✅ DEFENSIVE FILTER — only keep workers whose skill set
+    // actually contains the requested skill. Guards against the
+    // backend returning loose matches (e.g. "electrical wiring"
+    // workers showing up for "ac repair").
+    const filtered = data.filter((w) =>
+      workerHasSkill(w.skills, cleanSkill)
+    );
+
     // ✅ SORT BEST WORKERS FIRST
-    return data.sort((a, b) => {
+    return filtered.sort((a, b) => {
 
       const scoreA =
         (a.rating ?? 0) +
@@ -65,10 +76,14 @@ export const getWorkersBySkill = async (
 };
 
 // 🔥 GET NEARBY WORKERS
+// NOTE: Throws on API error so callers can fall back to /worker/search.
+// Returning [] on error would mask real failures and hide search results
+// from users (e.g. a transient 5xx or 403 would look like "no workers").
 export const getNearbyWorkers = async (
   lat: number,
   lng: number,
-  skill: string
+  skill: string,
+  signal?: AbortSignal
 ): Promise<Worker[]> => {
 
   const cleanSkill =
@@ -82,33 +97,22 @@ export const getNearbyWorkers = async (
     return [];
   }
 
-  try {
+  const res = await api.get(
+    "/worker/nearby",
+    {
+      params: {
+        lat,
+        lng,
+        skill: cleanSkill,
+      },
+      signal,
+    }
+  );
 
-    const res = await api.get(
-      "/worker/nearby",
-      {
-        params: {
-          lat,
-          lng,
-          skill: cleanSkill,
-        },
-      }
-    );
+  const data: Worker[] = Array.isArray(res.data) ? res.data : [];
 
-    return Array.isArray(res.data)
-      ? res.data
-      : [];
-
-  } catch (error: any) {
-
-    console.error(
-      "NEARBY WORKERS ERROR:",
-      error?.response?.data ||
-        error.message
-    );
-
-    return [];
-  }
+  // ✅ DEFENSIVE FILTER — same guarantee as /worker/search
+  return data.filter((w) => workerHasSkill(w.skills, cleanSkill));
 };
 
 // 🔥 GET WORKER BY ID

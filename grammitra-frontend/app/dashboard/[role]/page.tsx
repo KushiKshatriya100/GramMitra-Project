@@ -212,43 +212,37 @@ export default function DashboardPage() {
 
   if (!lang) return null;
 
-  // 📊 STATS
-  // ✅ USE CORRECT SOURCE BASED ON ROLE
-  const statsSource =
-    role === "worker"
-      ? incomingBookings
-      : bookings;
-
-  // ✅ COMPLETED BOOKINGS
-  const completedBookings =
-    statsSource.filter(
-      (b) =>
-        b.status ===
-        "COMPLETED"
-    );
-
-  // ✅ PENDING REVIEWS
-  const pendingReviews =
-    completedBookings.filter(
-      (b) =>
-        !b.reviewSubmitted
-    );
-
+  // 📊 STATS — driven by the currently visible tab. Previously the worker
+  // dashboard always showed stats from `incomingBookings` even when the
+  // "My Bookings" tab was active, which was confusing.
   const activeBookings =
-    role === "worker" &&
-    activeTab ===
-      "incoming-jobs"
+    role === "worker" && activeTab === "incoming-jobs"
       ? incomingBookings
       : bookings;
+
+  const completedBookings = activeBookings.filter(
+    (b) => b.status === "COMPLETED"
+  );
+
+  // ✅ PENDING REVIEWS — only meaningful for the user side of a booking
+  // (workers don't leave reviews on bookings; users do). So we only surface
+  // this for "My Bookings" tabs.
+  const isMyBookingsView =
+    role === "user" ||
+    (role === "worker" && activeTab === "my-bookings");
+
+  const pendingReviews = isMyBookingsView
+    ? completedBookings.filter((b) => !b.reviewSubmitted)
+    : [];
 
   if (loading) {
 
     return (
-      <div className="min-h-screen bg-[#F5EFE6]">
+      <div className="min-h-screen bg-[var(--bg)]">
 
         <Navbar />
 
-        <div className="pt-24 text-center text-gray-500">
+        <div className="pt-24 text-center text-[var(--text-soft)]">
 
           {translate(
             "common.loading",
@@ -260,7 +254,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5EFE6]">
+    <div className="min-h-screen bg-[var(--bg)]">
 
       <Navbar />
 
@@ -271,39 +265,23 @@ export default function DashboardPage() {
 
           <h1 className="text-3xl font-bold text-[var(--text)]">
 
-            {translate(
-              "dashboard.title",
-              "Your Dashboard"
-            )}{" "}
+            {t("dashboard.title")}{" "}
             (
             {role === "worker"
-              ? translate(
-                  "auth.worker",
-                  "Worker"
-                )
-              : translate(
-                  "auth.user",
-                  "User"
-                )}
+              ? t("auth.worker")
+              : t("auth.user")}
             )
           </h1>
 
-          <p className="text-gray-500 mt-2">
+          <p className="text-[var(--text-soft)] mt-2">
 
-            {translate(
-              "dashboard.subtitle",
-              "Manage your bookings and track your activity"
-            )}
+            {t("dashboard.subtitle")}
           </p>
 
           {/* 📩 SMS NOTICE */}
-          <div className="mt-3 text-sm text-gray-500">
+          <div className="mt-3 text-sm text-[var(--text-muted)]">
 
-            📩{" "}
-            {translate(
-              "booking.smsNotice",
-              "Worker will be notified via SMS"
-            )}
+            📩 {t("booking.smsNotice")}
           </div>
         </div>
 
@@ -311,28 +289,28 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
 
           {/* TOTAL */}
-          <div className="rounded-3xl bg-white border border-[var(--border)] p-6 shadow-sm">
+          <div className="rounded-3xl bg-[var(--card)] border border-[var(--border)] p-6 shadow-[var(--shadow-soft)]">
 
-            <p className="text-sm text-gray-500 mb-2">
+            <p className="text-sm text-[var(--text-soft)] mb-2">
 
-              Total Bookings
+              {t("dashboard.totalBookings")}
             </p>
 
             <h2 className="text-3xl font-bold text-[var(--text)]">
 
-              {statsSource.length}
+              {activeBookings.length}
             </h2>
           </div>
 
           {/* COMPLETED */}
-          <div className="rounded-3xl bg-white border border-[var(--border)] p-6 shadow-sm">
+          <div className="rounded-3xl bg-[var(--card)] border border-[var(--border)] p-6 shadow-[var(--shadow-soft)]">
 
-            <p className="text-sm text-gray-500 mb-2">
+            <p className="text-sm text-[var(--text-soft)] mb-2">
 
-              Completed Services
+              {t("dashboard.completedServices")}
             </p>
 
-            <h2 className="text-3xl font-bold text-green-600">
+            <h2 className="text-3xl font-bold text-[var(--success)]">
 
               {
                 completedBookings.length
@@ -341,14 +319,14 @@ export default function DashboardPage() {
           </div>
 
           {/* PENDING REVIEW */}
-          <div className="rounded-3xl bg-white border border-[var(--border)] p-6 shadow-sm">
+          <div className="rounded-3xl bg-[var(--card)] border border-[var(--border)] p-6 shadow-[var(--shadow-soft)]">
 
-            <p className="text-sm text-gray-500 mb-2">
+            <p className="text-sm text-[var(--text-soft)] mb-2">
 
-              Pending Reviews
+              {t("dashboard.pendingReviews")}
             </p>
 
-            <h2 className="text-3xl font-bold text-orange-500">
+            <h2 className="text-3xl font-bold text-[var(--primary)]">
 
               {
                 pendingReviews.length
@@ -360,7 +338,7 @@ export default function DashboardPage() {
         {/* ⭐ REVIEW ALERT */}
         {pendingReviews.length >
           0 && (
-          <div className="mb-8 rounded-3xl border border-yellow-200 bg-yellow-50 p-5">
+          <div className="mb-8 rounded-3xl border border-[var(--warning)]/30 bg-[var(--warning-soft)] p-5">
 
             <div className="flex items-start gap-3">
 
@@ -370,27 +348,16 @@ export default function DashboardPage() {
 
               <div>
 
-                <h3 className="font-semibold text-yellow-800">
+                <h3 className="font-semibold text-[var(--warning)]">
 
-                  Review Pending
+                  {t("dashboard.reviewPending")}
                 </h3>
 
-                <p className="text-sm text-yellow-700 mt-1">
+                <p className="text-sm text-[var(--text)] mt-1">
 
-                  You have{" "}
-                  <span className="font-semibold">
-
-                    {
-                      pendingReviews.length
-                    }
-                  </span>{" "}
-                  completed booking
-                  {pendingReviews.length >
-                  1
-                    ? "s"
-                    : ""}{" "}
-                  waiting for
-                  review.
+                  {t("dashboard.reviewPendingBody", {
+                    count: pendingReviews.length,
+                  })}
                 </p>
               </div>
             </div>
@@ -414,12 +381,12 @@ export default function DashboardPage() {
                 ${
                   activeTab ===
                   "my-bookings"
-                    ? "bg-[var(--primary)] text-white shadow-lg"
-                    : "bg-white text-gray-700 border border-gray-200"
+                    ? "bg-[var(--primary)] text-white shadow-[var(--shadow-medium)]"
+                    : "bg-[var(--card)] text-[var(--text)] border border-[var(--border)] hover:bg-[var(--bg)]"
                 }
               `}
             >
-              📤 My Bookings
+              {t("dashboard.myBookingsCount")}
 
               <span className="ml-2 text-xs opacity-80">
 
@@ -441,12 +408,12 @@ export default function DashboardPage() {
                 ${
                   activeTab ===
                   "incoming-jobs"
-                    ? "bg-[var(--primary)] text-white shadow-lg"
-                    : "bg-white text-gray-700 border border-gray-200"
+                    ? "bg-[var(--primary)] text-white shadow-[var(--shadow-medium)]"
+                    : "bg-[var(--card)] text-[var(--text)] border border-[var(--border)] hover:bg-[var(--bg)]"
                 }
               `}
             >
-              📥 Incoming Jobs
+              {t("dashboard.incomingJobsCount")}
 
               <span className="ml-2 text-xs opacity-80">
 
@@ -462,7 +429,7 @@ export default function DashboardPage() {
         {activeBookings.length ===
           0 && (
 
-          <div className="rounded-3xl border border-[var(--border)] bg-white p-12 text-center shadow-sm">
+          <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-12 text-center shadow-[var(--shadow-soft)]">
 
             <div className="text-6xl mb-4">
 
@@ -471,15 +438,12 @@ export default function DashboardPage() {
 
             <h3 className="text-xl font-semibold text-[var(--text)] mb-2">
 
-              No Bookings Found
+              {t("dashboard.noBookingsFound")}
             </h3>
 
-            <p className="text-gray-500">
+            <p className="text-[var(--text-soft)]">
 
-              {translate(
-                "dashboard.noBookings",
-                "No bookings found"
-              )}
+              {t("dashboard.noBookings")}
             </p>
           </div>
         )}

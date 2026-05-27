@@ -29,30 +29,29 @@ export function useTranslation() {
     return unsubscribe;
   }, []);
 
-  // 🔥 SAFE TRANSLATION FUNCTION
-  const t = useCallback((key: string): string => {
-    if (!lang) return "";
+  // 🔥 SAFE TRANSLATION FUNCTION with {{param}} substitution.
+  // Usage:  t("worker.defaultBio")
+  //         t("dashboard.reviewPendingBody", { count: 3 })
+  const t = useCallback(
+    (key: string, params?: Record<string, string | number>): string => {
+      if (!lang) return "";
 
-    const keys = key.split(".");
-    let value: any = translations[lang];
+      const lookup = (langKey: Lang): string | undefined => {
+        const segments = key.split(".");
+        let value: any = translations[langKey];
+        for (const k of segments) value = value?.[k];
+        return typeof value === "string" ? value : undefined;
+      };
 
-    for (const k of keys) {
-      value = value?.[k];
-    }
+      const resolved = lookup(lang) ?? lookup("en") ?? key;
 
-    // 🔥 fallback to EN
-    if (!value) {
-      let fallback: any = translations["en"];
-
-      for (const k of keys) {
-        fallback = fallback?.[k];
-      }
-
-      return fallback || key;
-    }
-
-    return value;
-  }, [lang]);
+      if (!params) return resolved;
+      return resolved.replace(/\{\{(\w+)\}\}/g, (_match, name: string) =>
+        params[name] != null ? String(params[name]) : `{{${name}}}`
+      );
+    },
+    [lang]
+  );
 
   return {
     t,

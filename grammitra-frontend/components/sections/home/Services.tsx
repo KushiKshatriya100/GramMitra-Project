@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import CategoryCard from "@/features/gram-mitra/components/CategoryCard";
 import { sections } from "@/features/gram-mitra/utils/categories";
-import { categoryIcons } from "@/features/gram-mitra/utils/categoryIcons";
+import { getCategoryIcon } from "@/features/gram-mitra/utils/categoryIcons";
 import { useTranslation } from "@/shared/i18n/useTranslation";
 import { formatSkillName } from "@/features/gram-mitra/utils/formatText";
 
@@ -40,8 +40,7 @@ export default function Services() {
             <div className="flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory no-scrollbar">
 
               {section.items.map((item) => {
-                const icon =
-                  categoryIcons[item.en.toLowerCase()] || "🔧";
+                const icon = getCategoryIcon(item.en);
 
                 const displayTitle =
                   lang === "en"

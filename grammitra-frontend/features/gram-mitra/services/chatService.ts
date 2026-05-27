@@ -72,6 +72,12 @@ export type ChatResponse = {
   workers?: ChatWorker[];
 
   booking?: ChatBooking | null;
+
+  /** If set, the chatbot offers a CTA that pushes this route. */
+  navigatePath?: string | null;
+
+  /** Canonical skill slug — used to build "View all" link. */
+  skillSlug?: string | null;
 };
 
 // ✅ SAFE RESPONSE CREATOR
@@ -85,6 +91,8 @@ const createFallbackResponse = (
     data: null,
     workers: [],
     booking: null,
+    navigatePath: null,
+    skillSlug: null,
   };
 };
 
@@ -160,6 +168,18 @@ export const sendChatMessage = async (
       booking:
         intent === "CHECK_STATUS"
           ? data
+          : null,
+
+      navigatePath:
+        typeof responseData.navigatePath === "string" &&
+        responseData.navigatePath.length > 0
+          ? responseData.navigatePath
+          : null,
+
+      skillSlug:
+        typeof responseData.skillSlug === "string" &&
+        responseData.skillSlug.length > 0
+          ? responseData.skillSlug
           : null,
     };
 

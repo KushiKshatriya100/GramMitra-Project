@@ -151,14 +151,14 @@ export default function WorkerCard({
         overflow-hidden
         rounded-[24px]
         border
-        border-gray-100
-        bg-white
+        border-[var(--border)]
+        bg-[var(--card)]
         p-4
-        shadow-sm
+        shadow-[var(--shadow-soft)]
         transition-all
         duration-300
         hover:-translate-y-1
-        hover:shadow-xl
+        hover:shadow-[var(--shadow-medium)]
         cursor-pointer
       "
     >
@@ -169,7 +169,7 @@ export default function WorkerCard({
         {/* IMAGE */}
         <div className="relative">
 
-          <div className="relative h-16 w-16 overflow-hidden rounded-2xl ring-2 ring-gray-50 shadow-sm md:h-20 md:w-20">
+          <div className="relative h-16 w-16 overflow-hidden rounded-2xl ring-2 ring-[var(--border)] shadow-[var(--shadow-soft)] md:h-20 md:w-20">
 
             <Image
               src={workerImage}
@@ -189,7 +189,7 @@ export default function WorkerCard({
 
           {/* ONLINE */}
           {worker.availability && (
-            <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white bg-green-500 shadow-sm" />
+            <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-[var(--card)] bg-[var(--success)] shadow-sm" />
           )}
         </div>
 
@@ -197,7 +197,7 @@ export default function WorkerCard({
         <div className="flex flex-col items-end gap-2">
 
           {/* VERIFIED */}
-          <span className="rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-bold text-green-700 ring-1 ring-inset ring-green-600/20">
+          <span className="rounded-full bg-[var(--success-soft)] px-2.5 py-1 text-[10px] font-bold text-[var(--success)] ring-1 ring-inset ring-[var(--success)]/30">
 
             ✓{" "}
             {t(
@@ -206,19 +206,19 @@ export default function WorkerCard({
           </span>
 
           {/* RATING */}
-          <div className="flex items-center gap-1 rounded-full bg-yellow-50 px-3 py-1 ring-1 ring-yellow-100">
+          <div className="flex items-center gap-1 rounded-full bg-[var(--warning-soft)] px-3 py-1 ring-1 ring-[var(--warning)]/20">
 
-            <span className="text-yellow-500 text-sm">
+            <span className="text-[var(--warning)] text-sm">
 
               ★
             </span>
 
-            <span className="text-xs font-bold text-gray-900">
+            <span className="text-xs font-bold text-[var(--text)]">
 
               {rating}
             </span>
 
-            <span className="text-[10px] text-gray-500">
+            <span className="text-[10px] text-[var(--text-soft)]">
 
               (
               {
@@ -233,7 +233,7 @@ export default function WorkerCard({
       {/* IDENTITY */}
       <div className="mb-3">
 
-        <h3 className="truncate text-base font-bold text-gray-900">
+        <h3 className="truncate text-base font-bold text-[var(--text)]">
 
           {worker.name ||
             t(
@@ -241,7 +241,7 @@ export default function WorkerCard({
             )}
         </h3>
 
-        <p className="text-xs font-semibold uppercase tracking-wide text-[#A35231]">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--primary)]">
 
           {primarySkill}
         </p>
@@ -251,32 +251,29 @@ export default function WorkerCard({
       <div className="mb-4 flex gap-2">
 
         {/* EXPERIENCE */}
-        <div className="flex-1 rounded-xl bg-gray-50 p-2 text-center">
+        <div className="flex-1 rounded-xl bg-[var(--bg)] p-2 text-center">
 
-          <p className="mb-1 text-[10px] font-medium uppercase leading-none text-gray-400">
+          <p className="mb-1 text-[10px] font-medium uppercase leading-none text-[var(--text-muted)]">
 
-            Exp.
+            {t("worker.expLabel")}
           </p>
 
-          <p className="text-xs font-bold text-gray-800">
+          <p className="text-xs font-bold text-[var(--text)]">
 
-            {
-              worker.experience ||
-              0
-            }
-            + Yrs
+            {worker.experience || 0}{" "}
+            {t("worker.yearsShort")}
           </p>
         </div>
 
         {/* WAGE */}
-        <div className="flex-1 rounded-xl bg-orange-50 p-2 text-center">
+        <div className="flex-1 rounded-xl bg-[var(--primary-soft)] p-2 text-center">
 
-          <p className="mb-1 text-[10px] font-medium uppercase leading-none text-orange-400">
+          <p className="mb-1 text-[10px] font-medium uppercase leading-none text-[var(--primary)]/70">
 
-            Wage
+            {t("worker.wageLabel")}
           </p>
 
-          <p className="text-xs font-bold text-[#A35231]">
+          <p className="text-xs font-bold text-[var(--primary)]">
 
             ₹
             {worker.dailyWage ||
@@ -289,10 +286,10 @@ export default function WorkerCard({
       {/* DESCRIPTION */}
       <div className="mb-4 h-12 overflow-hidden">
 
-        <p className="line-clamp-2 text-[13px] leading-relaxed text-gray-500">
+        <p className="line-clamp-2 text-[13px] leading-relaxed text-[var(--text-soft)]">
 
           {worker.description ||
-            `Expert in ${primarySkill} providing high-quality service.`}
+            t("worker.defaultDescription", { skill: primarySkill })}
         </p>
       </div>
 
@@ -308,12 +305,13 @@ export default function WorkerCard({
               className="
                 whitespace-nowrap
                 rounded-lg
-                bg-gray-100
+                bg-[var(--bg)]
+                border border-[var(--border)]
                 px-2.5
                 py-1
                 text-[10px]
                 font-medium
-                text-gray-600
+                text-[var(--text-soft)]
               "
             >
               {skill}
@@ -322,10 +320,10 @@ export default function WorkerCard({
       </div>
 
       {/* FOOTER */}
-      <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-3">
+      <div className="mt-auto flex items-center justify-between border-t border-[var(--border)] pt-3">
 
         {/* LOCATION */}
-        <div className="flex items-center gap-1 truncate text-gray-400">
+        <div className="flex items-center gap-1 truncate text-[var(--text-muted)]">
 
           <span className="text-sm">
             📍
@@ -333,8 +331,7 @@ export default function WorkerCard({
 
           <span className="truncate text-[11px] font-medium">
 
-            {worker.location ||
-              "Nearby"}
+            {worker.location || t("worker.nearby")}
           </span>
         </div>
 
@@ -342,7 +339,7 @@ export default function WorkerCard({
         {worker.distance !==
           undefined && (
 
-          <span className="text-[10px] font-bold text-gray-400">
+          <span className="text-[10px] font-bold text-[var(--text-muted)]">
 
             {worker.distance.toFixed(
               1
@@ -370,11 +367,12 @@ export default function WorkerCard({
             h-10
             flex-1
             rounded-xl
-            border-gray-200
+            !bg-transparent
+            border border-[var(--border)]
             text-xs
             font-bold
-            text-gray-700
-            hover:bg-gray-50
+            !text-[var(--text)]
+            hover:!bg-[var(--bg)]
           "
         >
           {t("worker.view")}
@@ -394,13 +392,8 @@ export default function WorkerCard({
             h-10
             flex-[1.5]
             rounded-xl
-            bg-[#A35231]
             text-xs
             font-bold
-            text-white
-            shadow-md
-            shadow-orange-900/20
-            hover:bg-[#8B4428]
           "
         >
           {t("worker.hire")}

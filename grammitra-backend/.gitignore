@@ -14,10 +14,18 @@ target/
 .DS_Store
 Thumbs.db
 
-# Env
+# Env / Secrets
 .env
+.env.*
+application.properties
+application-*.properties
+src/main/resources/application.properties
+src/main/resources/application-*.properties
+# Keep the example template tracked
+!src/main/resources/application.properties.example
+!src/main/resources/application-prod.properties
+!src/main/resources/application-prod.properties.example
 
 # Optional (future frontend)
 node_modules/
 dist/
-

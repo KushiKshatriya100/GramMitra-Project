@@ -2,214 +2,330 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 🌿 THEME VARIABLES */
-:root {
-  --bg: #F8F6F1;
-  --card: #FFFFFF;
+/* ─────────────────────────────────────────────────────────
+   THEME TOKENS
+   Light is the default. The boot script in <head> applies
+   `.theme-light` or `.theme-dark` to <html> before paint.
+   ───────────────────────────────────────────────────────── */
 
+:root,
+.theme-light {
+  color-scheme: light;
+
+  /* SURFACES */
+  --bg: #F8F6F1;
+  --bg-soft: #EFEAE0;
+  --card: #FFFFFF;
+  --input: #FFFFFF;
+
+  /* TEXT */
   --text: #2E2A26;
   --text-soft: #6B5E55;
+  --text-muted: #8A7E73;
 
+  /* LINES */
   --border: #E5D7C5;
+  --ring: rgba(160, 82, 45, 0.35);
 
+  /* BRAND */
   --primary: #A0522D;
   --primary-hover: #8B4513;
+  --primary-soft: rgba(160, 82, 45, 0.10);
+  --on-primary: #FFFFFF;
   --accent: #7C9A6D;
 
-  --overlay: rgba(0, 0, 0, 0.3);
+  /* OVERLAY (used over the village background image) */
+  --overlay: rgba(0, 0, 0, 0.30);
+  --bg-image-opacity: 0.80;
 
-  /* 🌤️ LIGHT SHADOWS */
-  --shadow-soft: 0 4px 20px rgba(0,0,0,0.05);
+  /* STATUS */
+  --success: #2F7D4F;
+  --success-soft: rgba(47, 125, 79, 0.12);
+  --warning: #B5791F;
+  --warning-soft: rgba(181, 121, 31, 0.14);
+  --danger:  #C0392B;
+  --danger-soft:  rgba(192, 57, 43, 0.10);
+  --info:    #2D6CB0;
+  --info-soft:    rgba(45, 108, 176, 0.12);
+
+  /* SHADOWS */
+  --shadow-soft:   0 4px 20px rgba(0,0,0,0.05);
   --shadow-medium: 0 8px 30px rgba(0,0,0,0.08);
 }
 
-/* 🌙 DARK MODE */
 .theme-dark {
-  /* ✅ WARM EARTHY DARK */
-  --bg: #1E1B19;
-  --card: #2B2927;
+  color-scheme: dark;
 
-  /* ✅ BETTER TEXT CONTRAST */
+  /* SURFACES — warm earthy dark */
+  --bg: #1E1B19;
+  --bg-soft: #25221F;
+  --card: #2B2927;
+  --input: #221F1D;
+
+  /* TEXT — higher contrast against warm surfaces */
   --text: #F5F3F0;
   --text-soft: #C8C1BA;
+  --text-muted: #9A8F86;
 
-  /* ✅ SOFT BORDERS */
+  /* LINES */
   --border: #3F3A36;
+  --ring: rgba(224, 122, 63, 0.45);
 
-  /* ✅ BRAND COLORS */
+  /* BRAND — brighter in dark for sufficient AA contrast */
   --primary: #E07A3F;
   --primary-hover: #C9652F;
+  --primary-soft: rgba(224, 122, 63, 0.16);
+  --on-primary: #1A1715;
   --accent: #8FBF7A;
 
-  /* ✅ BETTER OVERLAY */
-  --overlay: rgba(0, 0, 0, 0.45);
+  /* OVERLAY — heavier so the village image fades into night */
+  --overlay: rgba(10, 8, 7, 0.70);
+  --bg-image-opacity: 0.30;
 
-  /* 🌑 DARK SHADOWS */
-  --shadow-soft: 0 4px 20px rgba(0,0,0,0.25);
-  --shadow-medium: 0 8px 30px rgba(0,0,0,0.4);
+  /* STATUS — desaturated, brighter for legibility */
+  --success: #6FCF8E;
+  --success-soft: rgba(111, 207, 142, 0.16);
+  --warning: #E8B85A;
+  --warning-soft: rgba(232, 184, 90, 0.18);
+  --danger:  #F07A6E;
+  --danger-soft:  rgba(240, 122, 110, 0.16);
+  --info:    #6FA8E0;
+  --info-soft:    rgba(111, 168, 224, 0.16);
+
+  /* SHADOWS — denser ink for dark canvas */
+  --shadow-soft:   0 4px 20px rgba(0,0,0,0.35);
+  --shadow-medium: 0 10px 36px rgba(0,0,0,0.55);
 }
 
-/* RESET */
+/* ─────────────────────────────────────────────────────────
+   RESET / BASE
+   ───────────────────────────────────────────────────────── */
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-/* ✅ CONTROLLED TRANSITIONS */
-body,
-button,
-input,
-textarea,
-select,
-div,
-section,
-article,
-aside,
-main,
-nav {
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease,
-    color 0.2s ease;
-}
-
-/* BODY */
 html,
 body {
   height: 100%;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: "Inter", Arial, Helvetica, sans-serif;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-
   background-color: var(--bg);
   color: var(--text);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* OVERLAY */
-.bg-overlay {
-  background-color: var(--overlay);
-}
-
-/* IMAGE */
 img {
   max-width: 100%;
   display: block;
   border-radius: 10px;
 }
 
-/* BUTTON */
 button {
   cursor: pointer;
+  font-family: inherit;
 }
 
-/* SCROLLBAR CLEAN */
+/* Native form controls follow the theme (date/time pickers, autofill, etc.) */
+input,
+textarea,
+select {
+  font-family: inherit;
+  color: inherit;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--primary);
+  color: var(--on-primary);
+}
+
+/* Visible focus ring for keyboard users on interactive elements */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Themed scrollbar */
+* {
+  scrollbar-color: var(--border) transparent;
+  scrollbar-width: thin;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-muted);
+  background-clip: padding-box;
+}
+
+/* ─────────────────────────────────────────────────────────
+   THEME-AWARE OVERLAY (over the village background image)
+   ───────────────────────────────────────────────────────── */
+.bg-overlay {
+  background-color: var(--overlay);
+}
+
+/* ─────────────────────────────────────────────────────────
+   THEME-CHANGE TRANSITIONS
+   Run only during an explicit toggle, not on initial paint.
+   The Navbar adds `.theme-transitioning` to <html> for ~300ms
+   when the user flips the theme. This avoids both:
+     1. The first-paint shimmer when the boot script applies a class
+     2. Stray transitions on `transform` that fight hover animations
+   ───────────────────────────────────────────────────────── */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition:
+    background-color 250ms ease,
+    border-color    250ms ease,
+    color           250ms ease,
+    fill            250ms ease,
+    stroke          250ms ease,
+    box-shadow      250ms ease !important;
+}
+
+/* Honor user motion preference */
+@media (prefers-reduced-motion: reduce) {
+  html.theme-transitioning,
+  html.theme-transitioning *,
+  html.theme-transitioning *::before,
+  html.theme-transitioning *::after {
+    transition: none !important;
+  }
+  html { scroll-behavior: auto; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   UTILITIES
+   ───────────────────────────────────────────────────────── */
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
-
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-/* SCROLL SMOOTH */
-html {
-  scroll-behavior: smooth;
-}
+/* ─────────────────────────────────────────────────────────
+   COMPONENT CLASSES
+   ───────────────────────────────────────────────────────── */
 
-/* COMPONENTS */
 @layer components {
 
   .btn-primary {
-    @apply px-6 py-3 rounded-full font-medium transition;
+    @apply px-6 py-3 rounded-full font-medium;
 
     background-color: var(--primary);
-    color: white;
-
+    color: var(--on-primary);
     box-shadow: var(--shadow-soft);
+    transition:
+      background-color 200ms ease,
+      box-shadow 200ms ease,
+      transform 200ms ease;
   }
 
   .btn-primary:hover {
     background-color: var(--primary-hover);
-
     transform: translateY(-1px);
-
     box-shadow: var(--shadow-medium);
   }
 
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
   .input-primary {
-    @apply px-5 py-3 rounded-full outline-none w-full transition;
+    @apply px-5 py-3 rounded-full outline-none w-full;
 
-    background-color: var(--card);
+    background-color: var(--input);
     color: var(--text);
-
     border: 1px solid var(--border);
-
     caret-color: var(--primary);
+    transition:
+      border-color 180ms ease,
+      box-shadow   180ms ease,
+      background-color 180ms ease;
   }
 
   .input-primary::placeholder {
-    color: var(--text-soft);
-    opacity: 0.9;
+    color: var(--text-muted);
+    opacity: 1;
   }
 
-  .input-primary:focus {
-    border-color: var(--primary);
+  .input-primary:hover {
+    border-color: var(--text-muted);
+  }
 
-    box-shadow: 0 0 0 2px rgba(160, 82, 45, 0.15);
+  .input-primary:focus,
+  .input-primary:focus-visible {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--ring);
+    outline: none;
+  }
+
+  .input-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
   .section-title {
     @apply text-2xl font-semibold;
-
     color: var(--text);
   }
 
   .card-base {
-    @apply p-4 rounded-xl transition;
-
+    @apply p-4 rounded-xl;
     background-color: var(--card);
-
     border: 1px solid var(--border);
+    transition:
+      transform 200ms ease,
+      box-shadow 200ms ease,
+      border-color 200ms ease;
   }
 
   .card-base:hover {
     transform: translateY(-2px);
-
     box-shadow: var(--shadow-medium);
   }
 
+  /* Animations */
   @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(15px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(15px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
-  .animate-fadeIn {
-    animation: fadeIn 0.6s ease forwards;
-  }
-
-  .delay-100 {
-    animation-delay: 0.1s;
-  }
-
-  .delay-200 {
-    animation-delay: 0.2s;
-  }
-
-  .delay-300 {
-    animation-delay: 0.3s;
-  }
+  .animate-fadeIn { animation: fadeIn 0.6s ease forwards; }
+  .delay-100 { animation-delay: 0.1s; }
+  .delay-200 { animation-delay: 0.2s; }
+  .delay-300 { animation-delay: 0.3s; }
 }

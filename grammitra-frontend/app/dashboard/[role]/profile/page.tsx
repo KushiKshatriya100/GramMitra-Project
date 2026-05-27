@@ -50,23 +50,23 @@ export default function ProfilePage() {
 
   if (loading)
     return (
-      <div className="pt-24 text-center text-gray-500">
+      <div className="pt-24 text-center text-[var(--text-soft)]">
         {t("common.loading")}
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-[#F5EFE6]">
+    <div className="min-h-screen bg-[var(--bg)]">
       <Navbar />
 
       <div className="max-w-5xl mx-auto px-6 pt-24 pb-10 space-y-6">
 
         {/* 🔥 WORKER PROFILE HEADER */}
         {user?.role === "WORKER" && worker && (
-          <div className="bg-white rounded-2xl shadow p-6 flex items-center gap-6">
+          <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-[var(--shadow-soft)] p-6 flex items-center gap-6">
 
             {/* IMAGE */}
-            <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
+            <div className="w-24 h-24 rounded-full overflow-hidden bg-[var(--bg)] border border-[var(--border)]">
               {worker.profileImage ? (
                 <img
                   src={worker.profileImage}
@@ -74,7 +74,7 @@ export default function ProfilePage() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="flex items-center justify-center h-full text-gray-400 text-xl">
+                <div className="flex items-center justify-center h-full text-[var(--text-muted)] text-xl">
                   W
                 </div>
               )}
@@ -82,7 +82,7 @@ export default function ProfilePage() {
 
             {/* DETAILS */}
             <div className="flex-1">
-              <h2 className="text-xl font-bold">
+              <h2 className="text-xl font-bold text-[var(--text)]">
                 {(() => {
                   const skill = worker.skills?.[0];
                   if (!skill) return t("worker.localWorker");
@@ -94,40 +94,40 @@ export default function ProfilePage() {
                 })()}
               </h2>
 
-              <p className="text-gray-500 text-sm">
+              <p className="text-[var(--text-soft)] text-sm">
                 📍 {worker.location || t("profile.notAdded")}
               </p>
 
-              <p className="text-gray-500 text-sm">
+              <p className="text-[var(--text-soft)] text-sm">
                 🎯 {worker.experience || 0} {t("profile.yearsExperience")}
               </p>
             </div>
 
             {/* COMPLETION */}
-            <div className="text-green-600 font-bold text-lg">
+            <div className="text-[var(--success)] font-bold text-lg">
               {worker.profileCompletion || 0}%
             </div>
           </div>
         )}
 
         {/* BASIC INFO */}
-        <div className="bg-white rounded-2xl shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">
+        <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-[var(--shadow-soft)] p-6">
+          <h2 className="text-xl font-semibold mb-4 text-[var(--text)]">
             {t("profile.basicInfo")}
           </h2>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <p className="text-gray-500">{t("profile.name")}</p>
-            <p>{user?.name}</p>
+            <p className="text-[var(--text-soft)]">{t("profile.name")}</p>
+            <p className="text-[var(--text)]">{user?.name}</p>
 
-            <p className="text-gray-500">{t("profile.phone")}</p>
-            <p>{user?.phone}</p>
+            <p className="text-[var(--text-soft)]">{t("profile.phone")}</p>
+            <p className="text-[var(--text)]">{user?.phone}</p>
 
-            <p className="text-gray-500">{t("profile.loginId")}</p>
-            <p>{user?.loginId}</p>
+            <p className="text-[var(--text-soft)]">{t("profile.loginId")}</p>
+            <p className="text-[var(--text)]">{user?.loginId}</p>
 
-            <p className="text-gray-500">{t("profile.role")}</p>
-            <p>
+            <p className="text-[var(--text-soft)]">{t("profile.role")}</p>
+            <p className="text-[var(--text)]">
               {user?.role === "WORKER"
                 ? t("auth.worker")
                 : t("auth.user")}
@@ -139,20 +139,20 @@ export default function ProfilePage() {
         {user?.role === "WORKER" && (
           <>
             {/* PROFILE STATUS */}
-            <div className="bg-white rounded-2xl shadow p-6 flex justify-between items-center">
+            <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-[var(--shadow-soft)] p-6 flex justify-between items-center">
               <div>
-                <h3 className="font-semibold">
+                <h3 className="font-semibold text-[var(--text)]">
                   {t("profile.workerProfile")}
                 </h3>
 
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-[var(--text-soft)]">
                   {worker?.profileCompleted
                     ? t("profile.completed")
                     : t("profile.incomplete")}
                 </p>
               </div>
 
-              <div className="text-green-600 font-bold">
+              <div className="text-[var(--success)] font-bold">
                 {worker?.profileCompletion || 0}%
               </div>
             </div>
@@ -173,7 +173,7 @@ export default function ProfilePage() {
                   onClick={() =>
                     router.push(`/worker/${worker.id}`)
                   }
-                  className="w-full bg-blue-600"
+                  className="w-full"
                 >
                   {t("profile.view")}
                 </Button>

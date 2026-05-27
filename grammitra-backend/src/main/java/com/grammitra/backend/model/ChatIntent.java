@@ -31,6 +31,12 @@ public enum ChatIntent {
     // 👷 Select worker from previous results
     SELECT_WORKER,
 
+    // ℹ️ Questions about GramMitra itself
+    ABOUT_APP,
+
+    // 🧭 Take me somewhere (dashboard / profile / edit / services)
+    NAVIGATE,
+
     // ❓ Unknown intent
     UNKNOWN
 }

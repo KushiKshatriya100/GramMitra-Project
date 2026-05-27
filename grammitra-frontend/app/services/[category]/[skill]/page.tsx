@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
+import toast from "react-hot-toast";
+import axios from "axios";
 
 import {
   getWorkersBySkill,
   getNearbyWorkers,
 } from "@/features/gram-mitra/services/workerService";
+import { ApiError } from "@/lib/api";
 
 import WorkerCard from "@/features/gram-mitra/components/WorkerCard";
 import Navbar from "@/components/layout/Navbar";
@@ -45,109 +48,114 @@ export default function ServicesPage() {
     "rating" | "nearest" | "wage"
   >("rating");
 
+  // Guards against React Strict Mode double-invoke + late callbacks
+  const inFlight = useRef<AbortController | null>(null);
+
   useEffect(() => {
     if (!skill) return;
 
-    let isMounted = true;
+    // Cancel any previous in-flight request (e.g. skill changed, or Strict
+    // Mode is double-mounting the effect in dev).
+    inFlight.current?.abort();
+    const ctrl = new AbortController();
+    inFlight.current = ctrl;
+
+    let active = true;
+
+    const isAbort = (e: unknown) =>
+      axios.isCancel(e) || (e as any)?.code === "ERR_CANCELED" ||
+      (e as any)?.name === "CanceledError" || (e as any)?.name === "AbortError";
+
+    // Single user-facing error toast per attempt, regardless of how many
+    // fallback layers fire.
+    let toldUser = false;
+    const reportError = (err: unknown) => {
+      if (toldUser || isAbort(err)) return;
+      toldUser = true;
+
+      if (err instanceof ApiError) {
+        if (err.code === "FORBIDDEN") {
+          toast.error(t("services.forbidden"));
+          return;
+        }
+        if (err.code === "NETWORK" || err.code === "TIMEOUT") {
+          toast.error(t("services.networkError"));
+          return;
+        }
+      }
+      toast.error(t("services.searchFailed"));
+    };
+
+    const fallbackFetch = async () => {
+      try {
+        const data = await getWorkersBySkill(skill, ctrl.signal);
+        if (!active) return;
+
+        const filtered =
+          data?.filter(
+            (w: Worker) => w.profileCompleted && w.availability
+          ) || [];
+
+        setWorkers(filtered);
+      } catch (err) {
+        if (!active || isAbort(err)) return;
+        console.error("Fallback fetch error:", err);
+        setWorkers([]);
+        reportError(err);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
 
     const fetchWorkers = async () => {
       setLoading(true);
 
       if (!navigator?.geolocation) {
-        console.warn(
-          "Geolocation not supported → fallback"
-        );
-
         await fallbackFetch();
-
         return;
       }
 
       navigator.geolocation.getCurrentPosition(
         async (position) => {
+          if (!active) return;
           try {
-            const { latitude, longitude } =
-              position.coords;
-
-            const data =
-              await getNearbyWorkers(
-                latitude,
-                longitude,
-                skill
-              );
-
-            if (!isMounted) return;
-
-            const safeData = Array.isArray(data)
-              ? data
-              : [];
-
-            setWorkers(safeData);
-          } catch (err) {
-            console.error(
-              "Nearby fetch error:",
-              err
+            const { latitude, longitude } = position.coords;
+            const data = await getNearbyWorkers(
+              latitude,
+              longitude,
+              skill,
+              ctrl.signal
             );
-
+            if (!active) return;
+            setWorkers(Array.isArray(data) ? data : []);
+            setLoading(false);
+          } catch (err) {
+            if (!active || isAbort(err)) return;
+            // Nearby failed — try /worker/search (public, no geo).
+            // Only surface a toast if BOTH fail.
+            console.warn("Nearby fetch failed, falling back to search:", err);
             await fallbackFetch();
-          } finally {
-            if (isMounted) {
-              setLoading(false);
-            }
           }
         },
 
-        async (error) => {
-          console.warn(
-            "Geolocation error:",
-            error.message
-          );
-
+        async (geoErr) => {
+          if (!active) return;
+          // Permission denied / unavailable — silent fallback, NOT an error.
+          console.info("Geolocation unavailable, using search:", geoErr.message);
           await fallbackFetch();
         },
 
-        {
-          timeout: 8000,
-          maximumAge: 60000,
-        }
+        { timeout: 8000, maximumAge: 60000 }
       );
-    };
-
-    const fallbackFetch = async () => {
-      try {
-        const data =
-          await getWorkersBySkill(skill);
-
-        if (!isMounted) return;
-
-        const filtered =
-          data?.filter(
-            (w: Worker) =>
-              w.profileCompleted &&
-              w.availability
-          ) || [];
-
-        setWorkers(filtered);
-      } catch (err) {
-        console.error(
-          "Fallback fetch error:",
-          err
-        );
-
-        setWorkers([]);
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
     };
 
     fetchWorkers();
 
     return () => {
-      isMounted = false;
+      active = false;
+      ctrl.abort();
     };
-  }, [skill]);
+  }, [skill, t]);
 
   // ✅ TRANSLATION KEY
   const skillKey = mapSkillKey(skill);
@@ -330,7 +338,7 @@ export default function ServicesPage() {
                 </p>
 
                 <p className="text-sm text-[var(--text-soft)] mt-1">
-                  Available Workers
+                  {t("services.availableWorkers")}
                 </p>
               </div>
 
@@ -350,7 +358,7 @@ export default function ServicesPage() {
                 </p>
 
                 <p className="text-sm text-[var(--text-soft)] mt-1">
-                  Trusted Local Services
+                  {t("services.trustedLocal")}
                 </p>
               </div>
             </div>
@@ -379,12 +387,11 @@ export default function ServicesPage() {
                   text-[var(--text)]
                 "
               >
-                Available Workers
+                {t("services.availableWorkers")}
               </h2>
 
               <p className="text-[var(--text-soft)] text-sm mt-1">
-                Skilled workers available near your
-                location
+                {t("services.skilledNearby")}
               </p>
             </div>
 
@@ -392,7 +399,7 @@ export default function ServicesPage() {
             <div className="flex items-center gap-3">
 
               <span className="text-sm text-[var(--text-soft)]">
-                Sort by:
+                {t("filter.sortBy")}:
               </span>
 
               <select
@@ -416,15 +423,15 @@ export default function ServicesPage() {
                 "
               >
                 <option value="rating">
-                  Top Rated
+                  {t("filter.topRated")}
                 </option>
 
                 <option value="nearest">
-                  Nearest
+                  {t("filter.nearest")}
                 </option>
 
                 <option value="wage">
-                  Lowest Wage
+                  {t("filter.lowestWage")}
                 </option>
               </select>
             </div>
@@ -466,8 +473,7 @@ export default function ServicesPage() {
                 mx-auto
               "
             >
-              Try searching nearby areas or explore
-              similar services available on GramMitra.
+              {t("services.tryNearbyOrOther")}
             </p>
           </div>
         )}
@@ -489,7 +495,7 @@ export default function ServicesPage() {
                 key={worker.id}
                 className="animate-fadeIn"
               >
-                <WorkerCard worker={worker} />
+                <WorkerCard worker={worker} matchedSkill={skill} />
               </div>
             ))}
           </div>

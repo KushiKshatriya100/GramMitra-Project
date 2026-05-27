@@ -11,7 +11,9 @@ import com.grammitra.backend.repository.JobRepository;
 import com.grammitra.backend.repository.ReviewRepository;
 import com.grammitra.backend.repository.WorkerRepository;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -44,6 +46,26 @@ public class ReviewService {
     }
 
     // ✅ CREATE REVIEW
+    // Authorization rules:
+    //   - caller (auth-derived userId) must own the booking (booking.userId)
+    //   - booking must be in COMPLETED status
+    //   - only one review per booking
+    //
+    // Status code choices:
+    //   401 — no auth principal (controller's job, defense-in-depth here)
+    //   403 — booking exists but caller doesn't own it. We deliberately
+    //         return 403 instead of 404 because the booking IS real; 404
+    //         would also work as an ID-existence non-disclosure, but the
+    //         API surface is private (only the booking's customer should
+    //         know their own booking ID), so 403 is more honest.
+    //   404 — booking truly missing
+    //   409 — booking exists & is owned by caller, but state forbids the
+    //         action (not completed yet, or already reviewed). 409 Conflict
+    //         is the right semantic for "the resource exists but its
+    //         current state is incompatible with the request."
+    //   400 — caught by @Valid on the DTO; the rating/comment checks below
+    //         are kept defensively in case the service is called from a
+    //         non-controller path one day.
     public Review addReview(
             String bookingId,
             int rating,
@@ -51,48 +73,55 @@ public class ReviewService {
             String userId
     ) {
 
-        // ✅ VALIDATION
+        if (userId == null || userId.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED, "Authentication required");
+        }
+
         if (rating < 1 || rating > 5) {
-            throw new RuntimeException(
-                    "Rating must be between 1 and 5"
-            );
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Rating must be between 1 and 5");
         }
 
         if (comment == null || comment.trim().isEmpty()) {
-            throw new RuntimeException(
-                    "Review comment cannot be empty"
-            );
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Review comment cannot be empty");
         }
 
         // ✅ FIND BOOKING
         Booking booking = bookingRepository
                 .findById(bookingId)
-                .orElseThrow(() ->
-                        new RuntimeException("Booking not found")
-                );
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Booking not found"));
 
-        // ✅ ONLY BOOKING OWNER CAN REVIEW
-        if (!booking.getUserId().equals(userId)) {
-
-            throw new RuntimeException(
-                    "Only booking owner can add review"
-            );
+        // 🔐 OWNERSHIP — caller must be the booking's customer
+        if (!userId.equals(booking.getUserId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Only the booking's customer can submit a review");
         }
 
-        // ✅ ONLY COMPLETED BOOKINGS
+        // ✅ STATE — only completed bookings can be reviewed
         if (!"COMPLETED".equals(booking.getStatus())) {
-
-            throw new RuntimeException(
-                    "Booking not completed yet"
-            );
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Booking must be COMPLETED before it can be reviewed");
         }
 
-        // ✅ PREVENT DUPLICATE REVIEW
+        // ✅ ONE REVIEW PER BOOKING — belt-and-suspenders:
+        //   1. Fast pre-check on the booking's own flag (no extra query).
+        //   2. Authoritative check against the review collection in case
+        //      the flag drifted (rare, but possible if a save failed
+        //      mid-flight before the booking update committed).
+        if (booking.isReviewSubmitted()) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "A review has already been submitted for this booking");
+        }
         if (reviewRepository.existsByBookingId(bookingId)) {
-
-            throw new RuntimeException(
-                    "Review already submitted"
-            );
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "A review has already been submitted for this booking");
         }
 
         // ✅ CREATE REVIEW

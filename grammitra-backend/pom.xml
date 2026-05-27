@@ -46,6 +46,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -57,6 +61,22 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+			<!--
+			  spring-boot-starter-test → json-path → android-json, which ships
+			  its OWN copy of `org.json.JSONObject` (Google's Android port,
+			  re-shaded by Vaadin). That collides with the real `org.json:json`
+			  used by Razorpay + PaymentService and produces:
+			    "Duplicate class org.json.JSONObject found in modules ..."
+			  json-path does not call into JSONObject directly, so excluding
+			  android-json is safe — the test classpath still has the real
+			  org.json:json available via Razorpay (and the explicit dep below).
+			-->
+			<exclusions>
+				<exclusion>
+					<groupId>com.vaadin.external.google</groupId>
+					<artifactId>android-json</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.security</groupId>
@@ -88,6 +108,52 @@
             <groupId>com.razorpay</groupId>
             <artifactId>razorpay-java</artifactId>
             <version>1.4.3</version>
+            <!--
+              DO NOT exclude org.json:json here. Razorpay's public API surface
+              takes org.json.JSONObject directly (client.orders.create(JSONObject),
+              Utils.verifyPaymentSignature(JSONObject, String)) and PaymentService
+              constructs those objects in its own code. The duplicate-JSONObject
+              warning we used to see came from android-json on the TEST classpath,
+              and that's excluded from spring-boot-starter-test above.
+            -->
+        </dependency>
+
+        <!--
+          org.json:json is required at compile time by PaymentService and is
+          also Razorpay's API input type. We declare it explicitly (rather
+          than relying on Razorpay's transitive) so the version is pinned
+          here — Razorpay 1.4.3 transitively brings the 2017 release, which
+          carries known CVEs. Keep this version >= the one Razorpay pulls;
+          otherwise Maven's nearest-wins resolution would silently downgrade.
+        -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20240303</version>
+        </dependency>
+
+        <!-- Redis: backs OTP store, attempt counter, and Bucket4j IP limiter -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!-- Bucket4j core + Redis distributed proxy. Pinned to a recent stable
+             (8.10.x) compatible with Lettuce 6 / Spring Boot 3.5. -->
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j_jdk17-core</artifactId>
+            <version>8.14.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j_jdk17-redis-common</artifactId>
+            <version>8.14.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j_jdk17-lettuce</artifactId>
+            <version>8.14.0</version>
         </dependency>
 
 

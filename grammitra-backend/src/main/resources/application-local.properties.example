@@ -1,0 +1,35 @@
+# =============================================================
+# application-local.properties.example
+#
+# Copy to `application-local.properties` (next to this file) and fill in
+# REAL dev values. Spring loads it when you start with:
+#
+#     mvn spring-boot:run -Dspring-boot.run.profiles=local
+#       or
+#     SPRING_PROFILES_ACTIVE=local java -jar app.jar
+#
+# `application-local.properties` is gitignored — never commit it.
+# This `.example` IS tracked so new clones know what to copy.
+# =============================================================
+
+# JWT — generate with `openssl rand -base64 48`
+jwt.secret=PASTE_REAL_RANDOM_VALUE_HERE_AT_LEAST_32_BYTES
+
+# MongoDB
+spring.data.mongodb.uri=mongodb://localhost:27017/grammitra
+# or Atlas:
+# spring.data.mongodb.uri=mongodb+srv://USER:PASS@CLUSTER.mongodb.net/grammitra?retryWrites=true&w=majority
+spring.data.mongodb.database=grammitra
+
+# Twilio
+twilio.account.sid=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+twilio.auth.token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+twilio.phone.number=+1XXXXXXXXXX
+
+# Razorpay
+razorpay.key=rzp_test_xxxxxxxxxxxxxxxx
+razorpay.secret=xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Gemini
+gemini.api.key=AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+gemini.api.url=https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent

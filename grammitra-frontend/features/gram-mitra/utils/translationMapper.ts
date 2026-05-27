@@ -8,6 +8,12 @@ export const mapStatusKey = (status: string) => {
       return "booking.status.accepted";
     case "REJECTED":
       return "booking.status.rejected";
+    case "COMPLETED":
+      return "booking.status.completed";
+    case "PAID":
+      // Legacy bookings created before payment/status decoupling — keep
+      // them rendering with a known label rather than the raw enum string.
+      return "booking.status.paid";
     default:
       return "";
   }

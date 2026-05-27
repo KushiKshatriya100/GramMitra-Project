@@ -16,15 +16,15 @@ export default function Footer() {
   return (
     <footer
       className="
-        mt-24 px-6 py-16 text-white
-        bg-gradient-to-br from-[#3B2F2F] via-[#4E3B31] to-[#2F2622]
-        border-t border-white/10
+        mt-24 px-6 py-16
+        bg-[var(--card)] text-[var(--text)]
+        border-t border-[var(--border)]
         relative overflow-hidden
       "
     >
-      {/* 🔥 subtle glow effect */}
+      {/* subtle brand glow */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 w-[500px] h-[300px] bg-white/5 blur-[120px] -translate-x-1/2" />
+        <div className="absolute top-0 left-1/2 w-[500px] h-[300px] bg-[var(--primary)]/5 blur-[120px] -translate-x-1/2" />
       </div>
 
       <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-12 relative z-10">
@@ -33,23 +33,24 @@ export default function Footer() {
         <div className="space-y-4 animate-fadeIn">
           <h2
             onClick={() => navigate("/")}
-            className="font-bold text-xl cursor-pointer hover:opacity-80 transition"
+            className="font-bold text-xl cursor-pointer hover:opacity-80 transition flex items-center gap-2"
           >
-            GramMitra 🌾
+            <span aria-hidden>🌾</span>
+            <span>GramMitra</span>
           </h2>
 
-          <p className="text-sm text-gray-300 leading-relaxed">
+          <p className="text-sm text-[var(--text-soft)] leading-relaxed">
             {t("footer.tagline")}
           </p>
         </div>
 
         {/* NAVIGATION */}
         <div className="space-y-4 animate-fadeIn delay-100">
-          <h3 className="font-semibold text-white/90 tracking-wide">
+          <h3 className="font-semibold text-[var(--text)] tracking-wide">
             {t("footer.links")}
           </h3>
 
-          <div className="flex flex-col gap-3 text-sm text-gray-300">
+          <div className="flex flex-col gap-3 text-sm text-[var(--text-soft)]">
 
             {[
               { label: t("navbar.home"), path: "/" },
@@ -59,17 +60,13 @@ export default function Footer() {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className="
-                  text-left relative group
-                  hover:text-white transition
-                "
+                className="text-left relative group hover:text-[var(--primary)] transition"
               >
                 {item.label}
 
-                {/* underline animation */}
                 <span className="
                   absolute left-0 -bottom-1 h-[2px] w-0
-                  bg-white transition-all duration-300
+                  bg-[var(--primary)] transition-all duration-300
                   group-hover:w-full
                 " />
               </button>
@@ -80,22 +77,22 @@ export default function Footer() {
 
         {/* CONTACT */}
         <div className="space-y-4 animate-fadeIn delay-200">
-          <h3 className="font-semibold text-white/90 tracking-wide">
+          <h3 className="font-semibold text-[var(--text)] tracking-wide">
             {t("footer.contact")}
           </h3>
 
-          <div className="flex flex-col gap-3 text-sm text-gray-300">
+          <div className="flex flex-col gap-3 text-sm text-[var(--text-soft)]">
 
             <a
               href="mailto:support@grammitra.com"
-              className="hover:text-white transition"
+              className="hover:text-[var(--primary)] transition"
             >
               📧 support@grammitra.com
             </a>
 
             <a
               href="tel:+918989513929"
-              className="hover:text-white transition"
+              className="hover:text-[var(--primary)] transition"
             >
               📞 +91 89895 13929
             </a>
@@ -107,34 +104,28 @@ export default function Footer() {
 
         {/* SOCIAL */}
         <div className="space-y-4 animate-fadeIn delay-300">
-          <h3 className="font-semibold text-white/90 tracking-wide">
+          <h3 className="font-semibold text-[var(--text)] tracking-wide">
             {t("footer.reach")}
           </h3>
 
-          <div className="flex flex-col gap-3 text-sm text-gray-300">
+          <div className="flex flex-col gap-3 text-sm text-[var(--text-soft)]">
 
             <a
               href="https://www.linkedin.com/in/kushi-kshatriya100/"
               target="_blank"
               rel="noopener noreferrer"
-              className="
-                hover:text-white transition
-                flex items-center gap-2
-              "
+              className="hover:text-[var(--primary)] transition flex items-center gap-2"
             >
-              🔗 LinkedIn Profile
+              🔗 {t("footer.linkedin")}
             </a>
 
             <a
               href="https://github.com/KushiKshatriya100"
               target="_blank"
               rel="noopener noreferrer"
-              className="
-                hover:text-white transition
-                flex items-center gap-2
-              "
+              className="hover:text-[var(--primary)] transition flex items-center gap-2"
             >
-              💻 GitHub Projects
+              💻 {t("footer.github")}
             </a>
 
           </div>
@@ -143,7 +134,7 @@ export default function Footer() {
       </div>
 
       {/* BOTTOM */}
-      <div className="mt-14 pt-6 border-t border-white/10 text-center text-xs text-gray-400 relative z-10">
+      <div className="mt-14 pt-6 border-t border-[var(--border)] text-center text-xs text-[var(--text-muted)] relative z-10">
         © {new Date().getFullYear()} GramMitra • {t("footer.rights")}
       </div>
     </footer>

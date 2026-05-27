@@ -20,7 +20,7 @@ export default function AboutPage() {
         </h1>
 
         {/* DESCRIPTION */}
-        <p className="text-gray-600 mb-6 leading-relaxed">
+        <p className="text-[var(--text-soft)] mb-6 leading-relaxed">
           {t("about.description")}
         </p>
 
@@ -31,7 +31,7 @@ export default function AboutPage() {
             <h2 className="text-xl font-semibold mb-2">
               {t("about.missionTitle")}
             </h2>
-            <p className="text-gray-600">
+            <p className="text-[var(--text-soft)]">
               {t("about.mission")}
             </p>
           </div>
@@ -40,7 +40,7 @@ export default function AboutPage() {
             <h2 className="text-xl font-semibold mb-2">
               {t("about.howItWorksTitle")}
             </h2>
-            <p className="text-gray-600">
+            <p className="text-[var(--text-soft)]">
               {t("about.howItWorks")}
             </p>
           </div>
@@ -49,7 +49,7 @@ export default function AboutPage() {
             <h2 className="text-xl font-semibold mb-2">
               {t("about.visionTitle")}
             </h2>
-            <p className="text-gray-600">
+            <p className="text-[var(--text-soft)]">
               {t("about.vision")}
             </p>
           </div>

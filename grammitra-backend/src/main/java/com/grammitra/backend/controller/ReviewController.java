@@ -1,90 +1,60 @@
 package com.grammitra.backend.controller;
 
+import com.grammitra.backend.dto.CreateReviewRequest;
 import com.grammitra.backend.model.Review;
 import com.grammitra.backend.service.ReviewService;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.security.core.Authentication;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/review")
-@CrossOrigin(origins = "*")
 public class ReviewController {
 
     private final ReviewService reviewService;
 
-    public ReviewController(
-            ReviewService reviewService
-    ) {
+    public ReviewController(ReviewService reviewService) {
         this.reviewService = reviewService;
     }
 
-    // ✅ CREATE REVIEW
+    /**
+     * Create a review. The reviewer is taken from the JWT — clients cannot
+     * pass it. ReviewService verifies the caller actually owns the booking
+     * and that it's in a state that can be reviewed; see that class for the
+     * exact rules.
+     */
     @PostMapping
     public ResponseEntity<Review> addReview(
-
-            @RequestParam String bookingId,
-
-            @RequestParam int rating,
-
-            @RequestParam String comment,
-
+            @RequestBody @Valid CreateReviewRequest req,
             Authentication auth
     ) {
-
-        if (bookingId == null || bookingId.trim().isEmpty()) {
-
-            throw new RuntimeException(
-                    "Invalid bookingId"
-            );
-        }
-
-        if (comment == null || comment.trim().isEmpty()) {
-
-            throw new RuntimeException(
-                    "Comment cannot be empty"
-            );
-        }
-
         if (auth == null || auth.getName() == null) {
-
-            throw new RuntimeException(
-                    "Unauthorized user"
-            );
+            return ResponseEntity.status(401).build();
         }
 
         Review review = reviewService.addReview(
-                bookingId,
-                rating,
-                comment,
+                req.getBookingId(),
+                req.getRating(),
+                req.getComment(),
                 auth.getName()
         );
 
         return ResponseEntity.ok(review);
     }
 
-    // ✅ GET WORKER REVIEWS
+    // ✅ GET WORKER REVIEWS (public — reads are open via SecurityConfig)
     @GetMapping("/worker/{workerId}")
     public ResponseEntity<List<Review>> getWorkerReviews(
-
             @PathVariable String workerId
     ) {
-
         if (workerId == null || workerId.trim().isEmpty()) {
-
-            throw new RuntimeException(
-                    "Invalid workerId"
-            );
+            throw new RuntimeException("Invalid workerId");
         }
-
-        List<Review> reviews =
-                reviewService.getWorkerReviews(workerId);
-
-        return ResponseEntity.ok(reviews);
+        return ResponseEntity.ok(reviewService.getWorkerReviews(workerId));
     }
 }

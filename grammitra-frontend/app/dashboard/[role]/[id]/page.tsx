@@ -38,28 +38,28 @@ export default function DashboardWorkerViewPage() {
 
   if (!worker) {
     return (
-      <div className="pt-24 text-center text-gray-500">
+      <div className="pt-24 text-center text-[var(--text-soft)]">
         {t("common.notFound")}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F5EFE6]">
+    <div className="min-h-screen bg-[var(--bg)]">
       <Navbar />
 
       <div className="max-w-4xl mx-auto px-6 pt-24 pb-10">
 
         <button
           onClick={() => router.back()}
-          className="text-blue-600 text-sm mb-4"
+          className="text-[var(--primary)] text-sm mb-4 hover:underline"
         >
           ← {t("common.back")}
         </button>
 
-        <div className="bg-white rounded-2xl shadow p-6 space-y-4">
+        <div className="bg-[var(--card)] border border-[var(--border)] text-[var(--text)] rounded-2xl shadow-[var(--shadow-soft)] p-6 space-y-4">
 
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-2xl font-bold text-[var(--text)]">
             {worker.skills?.[0] || t("worker.localWorker")}
           </h1>
 

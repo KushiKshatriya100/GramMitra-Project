@@ -88,15 +88,15 @@ export default function CategoryPage() {
       <Navbar />
 
       {/* HERO */}
-      <section className="relative overflow-hidden border-b border-[var(--border)] bg-gradient-to-br from-[#F7EFE5] via-[#F5EFE6] to-[#EFE3D4]">
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_right,#A0522D_0%,transparent_35%)]" />
+      <section className="relative overflow-hidden border-b border-[var(--border)] bg-[var(--bg-soft)]">
+        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_right,var(--primary)_0%,transparent_35%)]" />
 
         <div className="relative max-w-7xl mx-auto px-6 pt-28 pb-16">
           <div className="max-w-3xl">
 
             {/* BADGE */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 border border-[var(--border)] shadow-sm mb-6">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--card)]/80 border border-[var(--border)] shadow-[var(--shadow-soft)] mb-6">
+              <span className="w-2 h-2 rounded-full bg-[var(--success)] animate-pulse" />
 
               <span className="text-sm font-medium text-[var(--text-soft)]">
                 {workers.length} {t("services.title")}
@@ -114,33 +114,29 @@ export default function CategoryPage() {
 
             {/* SUBTITLE */}
             <p className="mt-5 text-lg text-[var(--text-soft)] leading-relaxed">
-              Find trusted and verified local workers near you for{" "}
-              <span className="font-semibold text-[var(--primary)]">
-                {translatedCategory}
-              </span>{" "}
-              services.
+              {t("services.findTrusted", { skill: translatedCategory })}
             </p>
 
             {/* STATS */}
             <div className="flex flex-wrap gap-4 mt-8">
 
-              <div className="bg-white/90 border border-[var(--border)] rounded-2xl px-5 py-4 shadow-sm">
+              <div className="bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl px-5 py-4 shadow-[var(--shadow-soft)]">
                 <p className="text-2xl font-bold text-[var(--text)]">
                   {workers.length}
                 </p>
 
                 <p className="text-sm text-[var(--text-soft)]">
-                  Available Workers
+                  {t("services.availableWorkers")}
                 </p>
               </div>
 
-              <div className="bg-white/90 border border-[var(--border)] rounded-2xl px-5 py-4 shadow-sm">
+              <div className="bg-[var(--card)]/90 border border-[var(--border)] rounded-2xl px-5 py-4 shadow-[var(--shadow-soft)]">
                 <p className="text-2xl font-bold text-[var(--text)]">
                   100%
                 </p>
 
                 <p className="text-sm text-[var(--text-soft)]">
-                  Verified Profiles
+                  {t("services.verifiedProfiles")}
                 </p>
               </div>
             </div>
@@ -160,7 +156,7 @@ export default function CategoryPage() {
 
         {/* EMPTY */}
         {!loading && workers.length === 0 && (
-          <div className="bg-white border border-[var(--border)] rounded-3xl p-10 text-center shadow-sm">
+          <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-10 text-center shadow-[var(--shadow-soft)]">
             <div className="text-6xl mb-5">🔎</div>
 
             <h2 className="text-2xl font-bold text-[var(--text)] mb-3">
@@ -168,18 +164,14 @@ export default function CategoryPage() {
             </h2>
 
             <p className="text-[var(--text-soft)] max-w-lg mx-auto leading-relaxed">
-              We could not find workers for{" "}
-              <span className="font-semibold text-[var(--primary)] capitalize">
-                {translatedCategory}
-              </span>{" "}
-              services near your location right now.
+              {t("services.noWorkersNear", { skill: translatedCategory })}
             </p>
 
             <Button
               onClick={() => router.push("/services")}
               className="mt-8"
             >
-              Explore Other Services
+              {t("services.exploreOther")}
             </Button>
           </div>
         )}
@@ -192,19 +184,19 @@ export default function CategoryPage() {
 
               <div>
                 <h2 className="text-2xl font-bold text-[var(--text)]">
-                  Available Workers
+                  {t("services.availableWorkers")}
                 </h2>
 
                 <p className="text-[var(--text-soft)] mt-1">
-                  Trusted professionals ready to help you
+                  {t("services.subtitle")}
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-[var(--border)] shadow-sm w-fit">
-                <span className="text-green-600">●</span>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-soft)] w-fit">
+                <span className="text-[var(--success)]">●</span>
 
                 <span className="text-sm font-medium text-[var(--text-soft)]">
-                  {workers.length} Active Results
+                  {t("services.activeResults", { count: workers.length })}
                 </span>
               </div>
             </div>

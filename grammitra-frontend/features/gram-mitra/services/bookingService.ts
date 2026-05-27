@@ -2,14 +2,15 @@ import api from "@/lib/api";
 import { getUserIdFromToken } from "@/lib/auth";
 
 // 🔥 CREATE BOOKING
+// SECURITY: the backend derives userId from the JWT. We no longer send it
+// from the client — that was an IDOR. The local token check below is just
+// a UX guard so we don't fire a doomed request when logged out.
 export const createBooking = async (
   workerId: string,
   description: string
 ) => {
 
-  const userId = getUserIdFromToken();
-
-  if (!userId) {
+  if (!getUserIdFromToken()) {
     throw new Error("User not authenticated");
   }
 
@@ -17,14 +18,7 @@ export const createBooking = async (
 
     const response = await api.post(
       "/booking",
-      null,
-      {
-        params: {
-          userId,
-          workerId,
-          description,
-        },
-      }
+      { workerId, description }
     );
 
     return response.data;

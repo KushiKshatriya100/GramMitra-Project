@@ -64,8 +64,14 @@ public class Booking {
      * PENDING
      * → PAID
      * → FAILED
+     * → REFUNDED         (worker rejected a paid booking, Razorpay refund OK)
+     * → REFUND_FAILED    (refund call to Razorpay returned an error — needs
+     *                     manual reconciliation, see runbook)
      */
     private String paymentStatus;
+
+    /** Razorpay Refund ID. Set when a refund is issued; null otherwise. */
+    private String refundId;
 
     /**
      * Booking amount

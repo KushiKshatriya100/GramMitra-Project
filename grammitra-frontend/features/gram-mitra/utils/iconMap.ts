@@ -1,11 +1,9 @@
-import { Skill } from "./skills";
-
 // 🔥 DEFAULT ICON (fallback)
 export const DEFAULT_ICON_URL =
   "https://img.icons8.com/ios-filled/50/service.png";
 
 // 🔥 TYPE-SAFE ICON MAP
-const iconMap: Partial<Record<Skill, string>> = {
+const iconMap: Record<string, string> = {
   electrician: "https://img.icons8.com/color/96/electrical.png",
   plumber: "https://img.icons8.com/color/96/plumber.png",
   carpenter: "https://img.icons8.com/color/96/carpenter.png",
@@ -22,7 +20,7 @@ const iconMap: Partial<Record<Skill, string>> = {
 export const getIcon = (skill?: string): string => {
   if (!skill) return DEFAULT_ICON_URL;
 
-  const normalized = skill.toLowerCase().trim() as Skill;
+  const normalized = skill.toLowerCase().trim();
 
   return iconMap[normalized] || DEFAULT_ICON_URL;
 };

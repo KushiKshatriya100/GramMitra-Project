@@ -215,8 +215,7 @@ export default function EditWorkerProfile() {
           </h1>
 
           <p className="text-[var(--text-soft)] mt-3 text-sm md:text-base">
-            {t("profile.editSubtitle") ||
-              "Keep your profile updated to get better work opportunities"}
+            {t("profile.editSubtitle")}
           </p>
         </div>
 
@@ -241,8 +240,8 @@ export default function EditWorkerProfile() {
                 w-32 h-32
                 rounded-full
                 overflow-hidden
-                border-4 border-white
-                shadow-lg
+                border-4 border-[var(--card)]
+                shadow-[var(--shadow-medium)]
                 bg-[var(--bg-soft)]
               "
             >
@@ -304,8 +303,7 @@ export default function EditWorkerProfile() {
                   text-[var(--text)]
                 "
               >
-                {t("profile.phone") ||
-                  "Phone Number"}
+                {t("profile.phone")}
               </label>
 
               <input
@@ -343,12 +341,7 @@ export default function EditWorkerProfile() {
                   )
                 }
                 className="input-primary mt-2"
-                placeholder={
-                  t(
-                    "profile.enterLocation"
-                  ) ||
-                  "Enter your location"
-                }
+                placeholder={t("profile.enterLocation")}
               />
 
               <button
@@ -363,9 +356,8 @@ export default function EditWorkerProfile() {
                 type="button"
               >
                 {locLoading
-                  ? t("common.loading") ||
-                    "Getting..."
-                  : "📍 Use my location"}
+                  ? t("profile.gettingLocation")
+                  : t("profile.useMyLocation")}
               </button>
             </div>
 
@@ -428,11 +420,7 @@ export default function EditWorkerProfile() {
                   )
                 }
                 className="input-primary mt-2"
-                placeholder={
-                  t(
-                    "profile.enterAge"
-                  ) || "Enter age"
-                }
+                placeholder={t("profile.enterAge")}
               />
             </div>
 
@@ -445,9 +433,7 @@ export default function EditWorkerProfile() {
                   text-[var(--text)]
                 "
               >
-                {t(
-                  "profile.experience"
-                ) || "Experience"}
+                {t("profile.experience")}
               </label>
 
               <input
@@ -460,12 +446,7 @@ export default function EditWorkerProfile() {
                   )
                 }
                 className="input-primary mt-2"
-                placeholder={
-                  t(
-                    "profile.enterExperience"
-                  ) ||
-                  "Years of experience"
-                }
+                placeholder={t("profile.enterExperience")}
               />
             </div>
 
@@ -478,8 +459,7 @@ export default function EditWorkerProfile() {
                   text-[var(--text)]
                 "
               >
-                {t("profile.wage") ||
-                  "Daily Wage"}
+                {t("profile.wage")}
               </label>
 
               <input
@@ -492,12 +472,7 @@ export default function EditWorkerProfile() {
                   )
                 }
                 className="input-primary mt-2"
-                placeholder={
-                  t(
-                    "profile.enterWage"
-                  ) ||
-                  "Enter daily wage"
-                }
+                placeholder={t("profile.enterWage")}
               />
             </div>
           </div>
@@ -619,7 +594,7 @@ export default function EditWorkerProfile() {
                       }
                       className="
                         text-xs
-                        hover:text-red-500
+                        hover:text-[var(--danger)]
                         transition
                       "
                     >
